@@ -101,7 +101,7 @@ export function AudioUploader({
               <p className="text-sm text-green-600">{(audioFile.size / 1024 / 1024).toFixed(2)} MB</p>
             </div>
             <div className="flex gap-2 justify-center">
-              <Button onClick={onTranscribe} disabled={isTranscribing} className="gap-2">
+              <Button onClick={onTranscribe} disabled={isTranscribing} className="py-5 rounded-full bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700">
                 {isTranscribing ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
@@ -114,7 +114,7 @@ export function AudioUploader({
                   </>
                 )}
               </Button>
-              <Button onClick={onFileRemove} variant="outline">
+              <Button onClick={onFileRemove} variant="outline" className="py-5 rounded-full bg-gradient-to-r from-red-400 to-red-600 hover:from-orange-600 hover:to-red-700">
                 <Trash2 className="w-4 h-4" />
               </Button>
             </div>
