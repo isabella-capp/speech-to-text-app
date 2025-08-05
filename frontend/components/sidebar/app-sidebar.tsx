@@ -141,13 +141,13 @@ export function AppSidebar({ sessions, onDeleteSession, onClearAllSessions, onNe
             ) : (
               sessions.map((session) => (
                 <SidebarMenuItem key={session.id}>
-                  <div className="group flex items-center w-full">
+                  <div className="group flex items-center w-full mb-2">
                     <SidebarMenuButton
                       asChild
-                      className="flex-1 justify-start group-data-[collapsible=icon]:hidden"
+                      className="flex-1 justify-start group-data-[collapsible=icon]:hidden py-5 hover:bg-[#f0f2f4]/60"
                       title={session.title}
                     >
-                      <button className="w-full text-left">
+                      <button className="w-full text-left rounded-lg ">
                         <MessageSquare className="w-4 h-4 mr-2 flex-shrink-0" />
                         <div className="flex-1 min-w-0">
                           <div className="truncate font-medium">{session.title}</div>

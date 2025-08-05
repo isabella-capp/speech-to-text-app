@@ -106,17 +106,12 @@ export function SpeechToTextApp() {
           <header className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-10">
             <div className="flex items-center justify-between p-4">
               <div className="flex items-center gap-4">
-
-
                 <ModelSelector
                   selectedModel={selectedModel}
                   onModelChange={setSelectedModel}
                   showSelector={showModelSelector}
                   onShowSelectorChange={setShowModelSelector}
                 />
-
-                {currentSession && <span className="text-gray-400">•</span>}
-                {currentSession && <span className="text-gray-600">{currentSession.title}</span>}
               </div>
               {currentSession && (
                 <Button onClick={handleNewSession} variant="outline" size="sm" className="gap-2 bg-transparent">
@@ -136,6 +131,8 @@ export function SpeechToTextApp() {
                 session={currentSession}
                 onFileSelect={handleFileSelect}
                 onStartRecording={handleStartRecording}
+                onTranscribe={transcribeAudio}
+                isTranscribing={isTranscribing}
               />
             )}
           </main>
