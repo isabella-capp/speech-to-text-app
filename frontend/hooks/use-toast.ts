@@ -1,57 +1,27 @@
-import { useState, useCallback } from "react"
+import { toast as sonnerToast } from "sonner"
 
-interface Toast {
-  id: string
+interface ToastOptions {
   title: string
   description?: string
   variant?: "default" | "destructive"
 }
 
-interface ToastState {
-  toasts: Toast[]
-}
-
-let toastCount = 0
-
 export function useToast() {
-  const [state, setState] = useState<ToastState>({ toasts: [] })
-
-  const toast = useCallback(
-    ({ title, description, variant = "default" }: Omit<Toast, "id">) => {
-      const id = (++toastCount).toString()
-      const newToast: Toast = {
-        id,
-        title,
+  const toast = ({ title, description, variant = "default" }: ToastOptions) => {
+    if (variant === "destructive") {
+      sonnerToast.error(title, {
         description,
-        variant,
-      }
-
-      setState((prevState) => ({
-        toasts: [...prevState.toasts, newToast],
-      }))
-
-      // Automatically remove toast after 5 seconds
-      setTimeout(() => {
-        setState((prevState) => ({
-          toasts: prevState.toasts.filter((t) => t.id !== id),
-        }))
-      }, 5000)
-
-      // For debugging - log to console
-      console.log(`Toast: ${title}${description ? ` - ${description}` : ""}`)
-    },
-    []
-  )
-
-  const dismiss = useCallback((toastId: string) => {
-    setState((prevState) => ({
-      toasts: prevState.toasts.filter((t) => t.id !== toastId),
-    }))
-  }, [])
+      })
+    } else {
+      sonnerToast.success(title, {
+        description,
+      })
+    }
+  }
 
   return {
     toast,
-    dismiss,
-    toasts: state.toasts,
+    dismiss: () => sonnerToast.dismiss(),
+    toasts: [], // Manteniamo per compatibilità
   }
 }
