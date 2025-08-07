@@ -181,13 +181,21 @@ export function ChatView({ session, onFileSelect, onStartRecording, onTranscribe
                         {isPlaying ? "Pausa" : "Riproduci"}
                       </span>
                     </Button>
-                    <Button onClick={handleResetRecording} variant="outline" size="sm" className="py-[18px] bg-transparent rounded-full hover:bg-gradient-to-br hover:from-green-100 hover:to-blue-100">
-                      <RotateCcw className="w-4 h-4" />
+                    <Button 
+                      onClick={handleResetRecording} 
+                      variant="outline" 
+                      size="sm" 
+                      className="py-[18px] bg-transparent rounded-full hover:bg-gradient-to-br hover:from-green-100 hover:to-blue-100 cursor-pointer hover:gap-2 gap-0 transition-all duration-300 overflow-hidden group"
+                    >
+                      <RotateCcw className="w-4 h-4 flex-shrink-0" />
+                      <span className="max-w-0 group-hover:max-w-20 transition-all duration-300 overflow-hidden whitespace-nowrap opacity-0 group-hover:opacity-100">
+                        Reset
+                      </span>
                     </Button>
                     <Button
                       onClick={handleConfirmRecording}
                       size="sm"
-                      className="rounded-full py-[18px] bg-gradient-to-br from-green-500 to-blue-600 flex items-center justify-center"
+                      className="rounded-full py-[18px] bg-gradient-to-br from-green-500 to-blue-600 flex items-center justify-center cursor-pointer hover:from-green-600 hover:to-blue-700"
                       disabled={isTranscribing}
                     >
                       {isTranscribing ? (
@@ -243,7 +251,7 @@ export function ChatView({ session, onFileSelect, onStartRecording, onTranscribe
                           onClick={handleResetRecording}
                           variant="outline"
                           size="sm"
-                          className="py-[18px] rounded-full bg-transparent hover:gap-2 gap-0 transition-all duration-300 overflow-hidden group"
+                          className="py-[18px] rounded-full bg-transparent hover:gap-2 gap-0 transition-all duration-300 overflow-hidden group cursor-pointer"
                         >
                           <X className="w-4 h-4 flex-shrink-0" />
                           <span className="max-w-0 group-hover:max-w-20 transition-all duration-300 overflow-hidden whitespace-nowrap opacity-0 group-hover:opacity-100">
@@ -253,7 +261,7 @@ export function ChatView({ session, onFileSelect, onStartRecording, onTranscribe
                         <Button 
                           onClick={startRecording} 
                           size="sm" 
-                          className="py-[18px] rounded-full bg-blue-600 hover:bg-blue-700 hover:gap-2 gap-0 transition-all duration-300 overflow-hidden group"
+                          className="py-[18px] rounded-full bg-blue-600 hover:bg-blue-700 hover:gap-2 gap-0 transition-all duration-300 overflow-hidden group cursor-pointer"
                         >
                           <Mic className="w-4 h-4 flex-shrink-0" />
                           <span className="max-w-0 group-hover:max-w-20 transition-all duration-300 overflow-hidden whitespace-nowrap opacity-0 group-hover:opacity-100">
@@ -267,7 +275,7 @@ export function ChatView({ session, onFileSelect, onStartRecording, onTranscribe
                           onClick={togglePauseRecording}
                           variant="outline"
                           size="sm"
-                          className="py-[18px] rounded-full bg-transparent hover:gap-2 gap-0 transition-all duration-300 overflow-hidden group"
+                          className="py-[18px] rounded-full bg-transparent hover:gap-2 gap-0 transition-all duration-300 overflow-hidden group cursor-pointer"
                         >
                           {isPaused ? (
                             <>
@@ -288,12 +296,9 @@ export function ChatView({ session, onFileSelect, onStartRecording, onTranscribe
                         <Button 
                           onClick={handleStopRecording} 
                           size="sm" 
-                          className="py-[18px] rounded-full bg-red-600 hover:bg-red-700 hover:gap-2 gap-0 transition-all duration-300 overflow-hidden group"
+                          className="py-[18px] rounded-full bg-red-600 hover:bg-red-700 hover:gap-2 gap-0 transition-all duration-300 overflow-hidden group cursor-pointer"
                         >
                           <Square className="w-4 h-4 flex-shrink-0" />
-                          <span className="max-w-0 group-hover:max-w-20 transition-all duration-300 overflow-hidden whitespace-nowrap opacity-0 group-hover:opacity-100">
-                            Termina
-                          </span>
                         </Button>
                       </>
                     )}
@@ -307,9 +312,9 @@ export function ChatView({ session, onFileSelect, onStartRecording, onTranscribe
 
       {/* File Preview */}
       {selectedFile && (
-        <div className="border-t bg-yellow-50 p-4">
+        <div className="mb-2 p-4">
           <div className="max-w-3xl mx-auto">
-            <div className="bg-white rounded-xl p-4 border border-yellow-200 shadow-sm">
+            <div className="bg-white rounded-3xl p-4 border border-yellow-200 shadow-sm">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-gradient-to-br from-yellow-500 to-orange-600 rounded-lg flex items-center justify-center">
@@ -321,14 +326,21 @@ export function ChatView({ session, onFileSelect, onStartRecording, onTranscribe
                   </div>
                 </div>
                 <div className="flex gap-2">
-                  <Button onClick={handleRemoveFile} variant="outline" size="sm" className="gap-2 bg-transparent">
-                    <X className="w-4 h-4" />
-                    Rimuovi
+                  <Button 
+                    onClick={handleRemoveFile} 
+                    variant="outline" 
+                    size="sm" 
+                    className="py-[18px] rounded-full bg-transparent hover:gap-2 gap-0 transition-all duration-300 overflow-hidden group bg-gradient-to-br hover:from-yellow-200 hover:to-orange-300 cursor-pointer"
+                  >
+                    <X className="w-4 h-4 flex-shrink-0" />
+                    <span className="max-w-0 group-hover:max-w-20 transition-all duration-300 overflow-hidden whitespace-nowrap opacity-0 group-hover:opacity-100">
+                      Rimuovi
+                    </span>
                   </Button>
                   <Button
                     onClick={handleSendFile}
                     size="sm"
-                    className="gap-2 bg-blue-600 hover:bg-blue-700"
+                    className="gap-2 bg-gradient-to-br from-yellow-500 to-orange-600 hover:from-yellow-600 hover:to-orange-700 rounded-full py-[18px] flex items-center justify-center cursor-pointer"
                     disabled={isTranscribing}
                   >
                     {isTranscribing ? (
@@ -366,7 +378,7 @@ export function ChatView({ session, onFileSelect, onStartRecording, onTranscribe
                     onClick={handleStartRecording}
                     variant="ghost"
                     size="sm"
-                    className="h-10 w-10 p-0  hover:bg-[#f3f3f3] rounded-full"
+                    className="h-10 w-10 p-0  hover:bg-[#f3f3f3] rounded-full cursor-pointer"
                     title="Registra audio"
                   >
                     <Mic className="w-4 h-4" />
@@ -375,7 +387,7 @@ export function ChatView({ session, onFileSelect, onStartRecording, onTranscribe
                     onClick={() => document.getElementById("chat-file-input")?.click()}
                     variant="ghost"
                     size="sm"
-                    className="h-10 w-10 p-0 bg-blue-200 rounded-full hover:bg-blue-100"
+                    className="h-10 w-10 p-0 bg-blue-200 rounded-full hover:bg-blue-100 cursor-pointer"
                     title="Carica file audio"
                   >
                     <Upload className="w-4 h-4 text-blue-600" />
