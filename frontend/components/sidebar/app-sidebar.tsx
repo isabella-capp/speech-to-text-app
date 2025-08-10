@@ -131,7 +131,7 @@ export function AppSidebar({ sessions, onDeleteSession, onClearAllSessions, onNe
 
       <SidebarContent className="p-4 group-data-[collapsible=icon]:p-0">
         <div className="mb-4 text-[#758697] font-medium group-data-[collapsible=icon]:hidden">Trascrizioni</div>
-        <ScrollArea className="flex-1">
+        <ScrollArea className="flex-1 ">
           <SidebarMenu>
             {sessions.length === 0 ? (
               <div className="text-center py-8 text-gray-500 group-data-[collapsible=icon]:hidden">
@@ -155,25 +155,25 @@ export function AppSidebar({ sessions, onDeleteSession, onClearAllSessions, onNe
                             {session.timestamp.toLocaleDateString("it-IT")}
                           </div>
                         </div>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="opacity-0 group-hover:opacity-100 transition-opacity group-data-[collapsible=icon]:hidden"
+                            >
+                              <MoreHorizontal className="w-4 h-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => onDeleteSession(session.id)} className="text-red-600">
+                              <Trash2 className="w-4 h-4 mr-2" />
+                              Elimina
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </button>
                     </SidebarMenuButton>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="opacity-0 group-hover:opacity-100 transition-opacity group-data-[collapsible=icon]:hidden"
-                        >
-                          <MoreHorizontal className="w-4 h-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => onDeleteSession(session.id)} className="text-red-600">
-                          <Trash2 className="w-4 h-4 mr-2" />
-                          Elimina
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
                   </div>
                 </SidebarMenuItem>
               ))
