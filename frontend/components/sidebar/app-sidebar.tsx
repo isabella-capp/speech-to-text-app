@@ -25,7 +25,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu"
 import {
   Plus,
   Search,
@@ -36,10 +36,12 @@ import {
   AudioWaveformIcon as Waveform,
   Trash2,
   AudioLines,
+  LogOut,
 } from "lucide-react"
 import type { TranscriptionSession } from "@/types/transcription"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { cn } from "@/lib/utils"
+import { useAuth } from "@/hooks/use-auth"
 
 interface AppSidebarProps {
   sessions: TranscriptionSession[]
@@ -52,7 +54,7 @@ export function AppSidebar({ sessions, onDeleteSession, onClearAllSessions, onNe
   const [searchQuery, setSearchQuery] = useState("")
   const [showSearchDialog, setShowSearchDialog] = useState(false)
   const [showTriggerOnHover, setShowTriggerOnHover] = useState(false)
-
+  const { user, logout } = useAuth()
   const filteredSessions = sessions.filter(
     (session) =>
       session.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -63,7 +65,7 @@ export function AppSidebar({ sessions, onDeleteSession, onClearAllSessions, onNe
 
   return (
     <Sidebar collapsible="icon" className="border-r">
-     <SidebarHeader className="border-b p-4 group-data-[collapsible=icon]:p-2 group-data-[collapsible=icon]:border-none">
+      <SidebarHeader className="border-b p-4 group-data-[collapsible=icon]:p-2 group-data-[collapsible=icon]:border-none">
         <div className="flex flex-row justify-between items-center gap-2 mb-6 p-1 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:mb-2">
           <div className="flex items-center gap-3 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:mb-2">
             <div
@@ -74,8 +76,8 @@ export function AppSidebar({ sessions, onDeleteSession, onClearAllSessions, onNe
               {isCollapsed && showTriggerOnHover ? (
                 <div className="w-8 h-8">
                   <div className="w-4 h-4 p-1 bg-[#f0f2f4]/50 rounded-lg">
-                    <SidebarTrigger 
-                      onClick={() => setIsCollapsed(!isCollapsed)} 
+                    <SidebarTrigger
+                      onClick={() => setIsCollapsed(!isCollapsed)}
                     />
                   </div>
                 </div>
@@ -93,7 +95,7 @@ export function AppSidebar({ sessions, onDeleteSession, onClearAllSessions, onNe
 
           {/* SidebarTrigger visibile solo se sidebar NON collassata */}
           <SidebarTrigger className="group-data-[collapsible=icon]:hidden"
-            onClick={() => setIsCollapsed(!isCollapsed)} 
+            onClick={() => setIsCollapsed(!isCollapsed)}
           />
 
         </div>
@@ -113,20 +115,20 @@ export function AppSidebar({ sessions, onDeleteSession, onClearAllSessions, onNe
           <span className="group-data-[collapsible=icon]:hidden">Nuova Trascrizione</span>
         </Button>
 
-    <Button
-      className={cn(
-        "bg-transparent shadow-white text-black hover:bg-[#f0f2f4]/50",
-        "group-data-[collapsible=icon]:w-8 group-data-[collapsible=icon]:h-8",
-        "group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:justify-center",
-        "group-data-[collapsible=icon]:rounded-lg",
-        "w-full justify-start gap-2 p-5"
-      )}
-      onClick={() => setShowSearchDialog(true)}
-      title="Cerca trascrizioni"
-    >
-      <Search className="w-4 h-4 group-data-[collapsible=icon]:w-5 group-data-[collapsible=icon]:h-5" />
-      <span className="group-data-[collapsible=icon]:hidden">Cerca trascrizioni</span>
-    </Button>
+        <Button
+          className={cn(
+            "bg-transparent shadow-white text-black hover:bg-[#f0f2f4]/50",
+            "group-data-[collapsible=icon]:w-8 group-data-[collapsible=icon]:h-8",
+            "group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:justify-center",
+            "group-data-[collapsible=icon]:rounded-lg",
+            "w-full justify-start gap-2 p-5"
+          )}
+          onClick={() => setShowSearchDialog(true)}
+          title="Cerca trascrizioni"
+        >
+          <Search className="w-4 h-4 group-data-[collapsible=icon]:w-5 group-data-[collapsible=icon]:h-5" />
+          <span className="group-data-[collapsible=icon]:hidden">Cerca trascrizioni</span>
+        </Button>
       </SidebarHeader>
 
       <SidebarContent className="p-4 group-data-[collapsible=icon]:p-0">
@@ -166,6 +168,9 @@ export function AppSidebar({ sessions, onDeleteSession, onClearAllSessions, onNe
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
+                            <div className="px-2 py-1.5 text-sm font-medium">{user?.name}</div>
+                            <div className="px-2 py-1.5 text-xs text-gray-500">{user?.email}</div>
+                            <DropdownMenuSeparator />
                             <DropdownMenuItem onClick={() => onDeleteSession(session.id)} className="text-red-600">
                               <Trash2 className="w-4 h-4 mr-2" />
                               Elimina
@@ -187,7 +192,7 @@ export function AppSidebar({ sessions, onDeleteSession, onClearAllSessions, onNe
           <DropdownMenuTrigger asChild>
             <Button
               variant="ghost"
-               className={cn(
+              className={cn(
                 "group-data-[collapsible=icon]:w-8 group-data-[collapsible=icon]:h-8",
                 "group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:justify-center",
                 "group-data-[collapsible=icon]:rounded-lg",
@@ -196,7 +201,7 @@ export function AppSidebar({ sessions, onDeleteSession, onClearAllSessions, onNe
               title="Menu utente"
             >
               <div
-               className="w-6 h-6 bg-black rounded-full flex items-center justify-center">
+                className="w-6 h-6 bg-black rounded-full flex items-center justify-center">
                 <User className="w-3 h-3 text-white" />
               </div>
               <span className="group-data-[collapsible=icon]:hidden">Utente</span>
@@ -231,6 +236,11 @@ export function AppSidebar({ sessions, onDeleteSession, onClearAllSessions, onNe
                 </AlertDialogContent>
               </AlertDialog>
             )}
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={logout} className="text-red-600">
+              <LogOut className="w-4 h-4 mr-2" />
+              Logout
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarFooter>

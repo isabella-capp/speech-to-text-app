@@ -2,7 +2,7 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
-import { Plus } from "lucide-react"
+import { LogIn, Plus } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { useTranscriptionSessions } from "@/hooks/use-transcription-sessions"
 import { getModelName, getDefaultModel, getModelConfig } from "@/lib/models"
@@ -11,13 +11,15 @@ import { AppSidebar } from "./sidebar/app-sidebar"
 import { ModelSelector } from "./layout/model-selector"
 import { WelcomeScreen } from "./welcome/welcome-screen"
 import { ChatView } from "./chat/chat-view"
+import { useAuth } from "@/hooks/use-auth"
+import { GuestBanner } from "./guest-banner"
 
 export function SpeechToTextApp() {
   const [selectedModel, setSelectedModel] = useState<ModelType>(getDefaultModel())
   const [showModelSelector, setShowModelSelector] = useState(false)
   const [isTranscribing, setIsTranscribing] = useState(false)
   const [currentSession, setCurrentSession] = useState<TranscriptionSession | null>(null)
-
+  const { isGuest, showAuth } = useAuth()
   const { sessions, addSession, deleteSession, clearAllSessions } = useTranscriptionSessions()
   const { toast } = useToast()
 
@@ -61,11 +63,14 @@ export function SpeechToTextApp() {
       }
 
       setCurrentSession(newSession)
-      addSession(newSession)
+
+      if (!isGuest) {
+        addSession(newSession)
+      }
 
       toast({
         title: "Trascrizione completata",
-        description: `Utilizzato modello ${modelName}`,
+        description: `Utilizzato modello ${modelName}${isGuest ? " (modalità ospite)" : ""}`,
       })
     } catch (error) {
       toast({
@@ -102,6 +107,8 @@ export function SpeechToTextApp() {
         />
 
         <div className="flex-1 flex flex-col h-screen">
+          {/* Guest Banner */}
+          <GuestBanner />
           {/* Header */}
           <header className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-10">
             <div className="flex items-center justify-between p-4">
@@ -113,12 +120,20 @@ export function SpeechToTextApp() {
                   onShowSelectorChange={setShowModelSelector}
                 />
               </div>
-              {currentSession && (
-                <Button onClick={handleNewSession} variant="outline" size="sm" className="gap-2 bg-transparent">
-                  <Plus className="w-4 h-4" />
-                  Nuova
-                </Button>
-              )}
+              <div className="flex items-center gap-2">
+                {isGuest && (
+                  <Button onClick={showAuth} variant="outline" size="sm" className="gap-2 bg-transparent">
+                    <LogIn className="w-4 h-4" />
+                    Accedi
+                  </Button>
+                )}
+                {currentSession && (
+                  <Button onClick={handleNewSession} variant="outline" size="sm" className="gap-2 bg-transparent">
+                    <Plus className="w-4 h-4" />
+                    Nuova
+                  </Button>
+                )}
+              </div>
             </div>
           </header>
 
