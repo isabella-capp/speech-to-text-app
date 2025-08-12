@@ -2,7 +2,7 @@
 Transcription controller following REST principles and SOLID design
 """
 from typing import List
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, WebSocket, status
 from sqlalchemy.orm import Session
 
 from .models import TranscriptionRequest, TranscriptionResponse, TranscriptionUpdateRequest
@@ -126,3 +126,10 @@ async def delete_transcription(
     success = transcription_service.delete_transcription(transcription_id)
     if not success:
         raise HTTPException(status_code=500, detail="Failed to delete transcription")
+
+@router.websocket("/ws/transcribe")
+async def transcribe_ws(websocket: WebSocket, service: TranscriptionService = Depends()):
+    await websocket.accept()
+    async for audio_chunk in websocket.iter_bytes():
+        text = await service.transcribe_chunk(audio_chunk)
+        await websocket.send_json({"partial_text": text})
