@@ -11,8 +11,7 @@ interface AudioRecorderProps {
 }
 
 export function AudioRecorder({ onRecordingComplete }: AudioRecorderProps) {
-  const { isRecording, isPaused, recordingTime, formatTime, startRecording, togglePauseRecording, stopRecording } =
-    useAudioRecorder()
+  const { isRecording, isPaused, recordingTime, formatTime, startRecording, togglePauseRecording, stopRecording } = useAudioRecorder()
 
   const [recordedFile, setRecordedFile] = useState<File | null>(null)
   const [audioUrl, setAudioUrl] = useState<string | null>(null)

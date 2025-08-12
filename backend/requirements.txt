@@ -5,4 +5,7 @@ transformers
 torchaudio
 numpy
 soundfile
-openai-whisper
+faster-whisper
+librosa
+pydantic-settings
+python-multipart

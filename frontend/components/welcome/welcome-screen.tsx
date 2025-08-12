@@ -7,18 +7,11 @@ import { AudioRecorder } from "../audio/audio-recorder"
 
 interface WelcomeScreenProps {
   onTranscribe: (file: File) => void
-  isTranscribing: boolean
 }
 
-export function WelcomeScreen({ onTranscribe, isTranscribing }: WelcomeScreenProps) {
+export function WelcomeScreen({ onTranscribe }: WelcomeScreenProps) {
   const [audioFile, setAudioFile] = useState<File | null>(null)
   const [dragActive, setDragActive] = useState(false)
-
-  const handleTranscribe = () => {
-    if (audioFile) {
-      onTranscribe(audioFile)
-    }
-  }
 
   const handleRecordingComplete = (file: File) => {
     setAudioFile(file)
@@ -38,8 +31,7 @@ export function WelcomeScreen({ onTranscribe, isTranscribing }: WelcomeScreenPro
         audioFile={audioFile}
         onFileSelect={setAudioFile}
         onFileRemove={() => setAudioFile(null)}
-        onTranscribe={handleTranscribe}
-        isTranscribing={isTranscribing}
+        onTranscribe={(file) => onTranscribe(file)}
         dragActive={dragActive}
         onDragActiveChange={setDragActive}
       />
