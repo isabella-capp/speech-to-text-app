@@ -9,3 +9,6 @@ faster-whisper
 librosa
 pydantic-settings
 python-multipart
+PyJWT
+python-jose[cryptography]
+email-validator

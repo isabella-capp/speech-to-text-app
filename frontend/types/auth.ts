@@ -3,6 +3,7 @@ export interface User {
   email: string
   name: string
   role: "admin" | "user"
+  created_at: string
   picture?: string
   provider?: "email" | "google" | "github"
 }

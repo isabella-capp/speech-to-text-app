@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button"
 import { SidebarProvider } from "@/components/ui/sidebar"
 import { LogIn, Plus } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
+import { useAuth } from "@/hooks/use-auth"
 import { useTranscriptionSessions } from "@/hooks/use-transcription-sessions"
 import { useTranscription } from "@/hooks/use-transcription"
 import { getModelName, getDefaultModel } from "@/lib/models"
@@ -12,14 +13,15 @@ import { AppSidebar } from "./sidebar/app-sidebar"
 import { ModelSelector } from "./layout/model-selector"
 import { WelcomeScreen } from "./welcome/welcome-screen"
 import { ChatView } from "./chat/chat-view"
-import { useAuth } from "@/hooks/use-auth"
 import { GuestBanner } from "./guest-banner"
+import { useRouter } from "next/navigation"
 
 export function SpeechToTextApp() {
+  const router = useRouter()
+  const { isGuest } = useAuth()
   const [selectedModel, setSelectedModel] = useState<ModelType>(getDefaultModel())
   const [showModelSelector, setShowModelSelector] = useState(false)
   const [currentSession, setCurrentSession] = useState<TranscriptionSession | null>(null)
-  const { isGuest, showAuth } = useAuth()
   const { sessions, addSession, deleteSession, clearAllSessions } = useTranscriptionSessions()
   const { toast } = useToast()
 
@@ -148,8 +150,8 @@ export function SpeechToTextApp() {
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                {isGuest && (
-                  <Button onClick={showAuth} variant="outline" size="sm" className="gap-2 bg-transparent">
+                {true && (
+                  <Button onClick={() => router.push('/auth/login')} variant="outline" size="sm" className="gap-2 bg-transparent">
                     <LogIn className="w-4 h-4" />
                     Accedi
                   </Button>
