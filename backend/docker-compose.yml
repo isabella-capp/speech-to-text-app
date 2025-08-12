@@ -1,16 +1,12 @@
-version: '3.8'
+version: "3.8"
 services:
-  postgres:
-    image: postgres:15
-    environment:
-      POSTGRES_DB: speech_to_text_db
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password123
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.cpu  # o Dockerfile.gpu
     ports:
-      - "5432:5432"
+      - "8000:8000"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-
-volumes:
-  postgres_data:
-
+      - .:/app
+    environment:
+      - PYTHONUNBUFFERED=1
