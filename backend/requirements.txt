@@ -1,8 +1,8 @@
 fastapi
 uvicorn[standard]
-numpy
-soundfile
+torch
 transformers
 torchaudio
-torch
-git+https://github.com/openai/whisper.git
+numpy
+soundfile
+openai-whisper

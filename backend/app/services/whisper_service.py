@@ -1,27 +1,30 @@
-# app/services/whisper_service.py
-import base64
-import numpy as np
+# backend/app/services/whisper_service.py
 import torch
-import torchaudio
 import whisper
-from app.utils.audio_utils import decode_audio_base64
+import torchaudio
+from app.utils.audio_utils import decode_bytes_to_float32
+import numpy as np
 
 class WhisperService:
-    def __init__(self, model_name="small", device=None):
-        self.device = device or ("cuda" if torch.cuda.is_available() else "cpu")
-        print(f"[Whisper] Loading model '{model_name}' on {self.device}...")
-        self.model = whisper.load_model(model_name, device=self.device)
+    def __init__(self):
+        self.device = "cuda" if torch.cuda.is_available() else "cpu"
+        self.model = None
 
-    async def transcribe(self, audio_b64: str):
-        pcm, sr = decode_audio_base64(audio_b64)
+    def _load_model(self):
+        """Carica il modello solo quando necessario (lazy loading)"""
+        if self.model is None:
+            print("Loading Whisper model...")
+            self.model = whisper.load_model("small", device=self.device)
+            print("Whisper model loaded successfully!")
 
-        # Resample a 16kHz mono
+    async def transcribe(self, audio_bytes: bytes) -> str:
+        self._load_model()
+        
+        pcm, sr = decode_bytes_to_float32(audio_bytes)
         if sr != 16000:
-            pcm_tensor = torch.tensor(pcm, dtype=torch.float32)
-            pcm_tensor = torchaudio.transforms.Resample(sr, 16000)(pcm_tensor)
-            pcm = pcm_tensor.numpy()
+            pcm = torchaudio.functional.resample(torch.tensor(pcm), sr, 16000).numpy()
             sr = 16000
 
-        # Whisper accetta numpy float32
+        # Whisper richiede float32 numpy mono
         result = self.model.transcribe(pcm, fp16=False)
-        return result["text"]
+        return result["text"].strip()
