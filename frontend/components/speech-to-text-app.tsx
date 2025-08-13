@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button"
 import { SidebarProvider } from "@/components/ui/sidebar"
 import { LogIn, Plus } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
-import { useAuth } from "@/hooks/use-auth"
 import { useTranscriptionSessions } from "@/hooks/use-transcription-sessions"
 import { useTranscription } from "@/hooks/use-transcription"
 import { getModelName, getDefaultModel } from "@/lib/models"
@@ -18,7 +17,7 @@ import { useRouter } from "next/navigation"
 
 export function SpeechToTextApp() {
   const router = useRouter()
-  const { isGuest } = useAuth()
+  const isGuest = useState(false)
   const [selectedModel, setSelectedModel] = useState<ModelType>(getDefaultModel())
   const [showModelSelector, setShowModelSelector] = useState(false)
   const [currentSession, setCurrentSession] = useState<TranscriptionSession | null>(null)

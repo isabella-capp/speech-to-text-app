@@ -41,7 +41,7 @@ import {
 import type { TranscriptionSession } from "@/types/transcription"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { cn } from "@/lib/utils"
-import { useAuth } from "@/hooks/use-auth"
+import { logoutAction } from "@/lib/auth-actions"
 
 interface AppSidebarProps {
   sessions: TranscriptionSession[]
@@ -54,7 +54,7 @@ export function AppSidebar({ sessions, onDeleteSession, onClearAllSessions, onNe
   const [searchQuery, setSearchQuery] = useState("")
   const [showSearchDialog, setShowSearchDialog] = useState(false)
   const [showTriggerOnHover, setShowTriggerOnHover] = useState(false)
-  const { user, logout } = useAuth()
+
   const filteredSessions = sessions.filter(
     (session) =>
       session.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -168,8 +168,8 @@ export function AppSidebar({ sessions, onDeleteSession, onClearAllSessions, onNe
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <div className="px-2 py-1.5 text-sm font-medium">{user?.name}</div>
-                            <div className="px-2 py-1.5 text-xs text-gray-500">{user?.email}</div>
+                            <div className="px-2 py-1.5 text-sm font-medium">{session?.id}</div>
+                            <div className="px-2 py-1.5 text-xs text-gray-500">{session?.title}</div>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem onClick={() => onDeleteSession(session.id)} className="text-red-600">
                               <Trash2 className="w-4 h-4 mr-2" />
@@ -237,7 +237,7 @@ export function AppSidebar({ sessions, onDeleteSession, onClearAllSessions, onNe
               </AlertDialog>
             )}
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={logout} className="text-red-600">
+            <DropdownMenuItem onClick={logoutAction} className="text-red-600">
               <LogOut className="w-4 h-4 mr-2" />
               Logout
             </DropdownMenuItem>

@@ -14,11 +14,12 @@ import {
   Globe,
   Users,
 } from "lucide-react"
-import { useAuth } from "@/hooks/use-auth"
 import { useRouter } from "next/navigation"
 
 export function LandingPage() {
-  const { continueAsGuest } = useAuth()
+  const continueAsGuest = () => {
+    // Logica per continuare come ospite
+  }
   const router = useRouter()
 
   const handleLoginClick = () => {
