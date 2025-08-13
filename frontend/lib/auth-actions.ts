@@ -3,6 +3,7 @@
 import { signIn, signOut } from "@/lib/auth"
 import { AuthError } from "next-auth"
 import { redirect } from "next/navigation"
+import { signUp } from "./auth-api"
 
 export async function authenticate(formData: FormData) {
   try {
@@ -17,6 +18,14 @@ export async function authenticate(formData: FormData) {
       }
     }
     throw error
+  }
+}
+
+export async function signUpAction(formData: FormData) {
+  "use server";
+  const res = await signUp(formData);
+  if (res.successMessage) {
+    redirect("/auth/login");
   }
 }
 

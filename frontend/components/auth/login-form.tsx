@@ -21,7 +21,7 @@ import {
   ArrowLeft,
 } from "lucide-react"
 import { signIn } from "@/lib/auth"
-import { authenticate } from "@/lib/auth-actions"
+import { authenticate, signUpAction } from "@/lib/auth-actions"
 import GitHubSignIn from "@/components/auth/github-sign-in"
 import GoogleSignIn from "@/components/auth/google-sign-in"
 
@@ -40,19 +40,6 @@ export function LoginForm({ onBack }: LoginFormProps) {
 
   const handleContinueAsGuest = () => {
     console.log("Continuing as guest")
-  }
-
-  const handleRegister = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    setIsLoading(true)
-    try {
-      console.log("Registering user:", { registerName, registerEmail, registerPassword })
-      // Add your registration logic here
-    } catch (error) {
-      console.error("Registration error:", error)
-    } finally {
-      setIsLoading(false)
-    }
   }
 
   return (
@@ -172,7 +159,7 @@ export function LoginForm({ onBack }: LoginFormProps) {
             </TabsContent>
 
             <TabsContent value="register" className="space-y-4 mt-4">
-              <form onSubmit={handleRegister} className="space-y-4">
+              <form action={signUpAction} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="register-name" className="text-sm font-medium">
                     Nome completo
@@ -181,13 +168,11 @@ export function LoginForm({ onBack }: LoginFormProps) {
                     <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                     <Input
                       id="register-name"
+                      name="name"
                       type="text"
                       placeholder="Il tuo nome"
-                      value={registerName}
-                      onChange={(e) => setRegisterName(e.target.value)}
                       className="pl-10 h-11 bg-gray-50 border-gray-200 focus:bg-white transition-colors"
                       required
-                      disabled={isLoading}
                     />
                   </div>
                 </div>
@@ -201,12 +186,10 @@ export function LoginForm({ onBack }: LoginFormProps) {
                     <Input
                       id="register-email"
                       type="email"
+                      name="email"
                       placeholder="nome@esempio.com"
-                      value={registerEmail}
-                      onChange={(e) => setRegisterEmail(e.target.value)}
                       className="pl-10 h-11 bg-gray-50 border-gray-200 focus:bg-white transition-colors"
                       required
-                      disabled={isLoading}
                     />
                   </div>
                 </div>
@@ -219,14 +202,12 @@ export function LoginForm({ onBack }: LoginFormProps) {
                     <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                     <Input
                       id="register-password"
+                      name="password"
                       type={showRegisterPassword ? "text" : "password"}
                       placeholder="Almeno 6 caratteri"
-                      value={registerPassword}
-                      onChange={(e) => setRegisterPassword(e.target.value)}
                       className="pl-10 pr-10 h-11 bg-gray-50 border-gray-200 focus:bg-white transition-colors"
                       required
                       minLength={6}
-                      disabled={isLoading}
                     />
                     <Button
                       type="button"
