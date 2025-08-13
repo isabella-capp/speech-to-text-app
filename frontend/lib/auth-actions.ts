@@ -46,5 +46,5 @@ export async function signOutAction() {
 
 export async function logoutAction() {
   "use server";
-  await signOut()
+  await signOut({ redirectTo: "/" })
 }

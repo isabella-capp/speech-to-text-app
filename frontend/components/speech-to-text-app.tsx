@@ -15,9 +15,9 @@ import { ChatView } from "./chat/chat-view"
 import { GuestBanner } from "./guest-banner"
 import { useRouter } from "next/navigation"
 
-export function SpeechToTextApp() {
+export function SpeechToTextApp({ guestMode = false }: { guestMode?: boolean }) {
   const router = useRouter()
-  const isGuest = useState(false)
+  const [isGuest] = useState(guestMode)
   const [selectedModel, setSelectedModel] = useState<ModelType>(getDefaultModel())
   const [showModelSelector, setShowModelSelector] = useState(false)
   const [currentSession, setCurrentSession] = useState<TranscriptionSession | null>(null)
@@ -127,7 +127,7 @@ export function SpeechToTextApp() {
 
         <div className="flex-1 flex flex-col h-screen">
           {/* Guest Banner */}
-          <GuestBanner />
+          <GuestBanner isGuest={isGuest} />
           {/* Header */}
           <header className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-10">
             <div className="flex items-center justify-between p-4">
@@ -149,7 +149,7 @@ export function SpeechToTextApp() {
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                {true && (
+                {isGuest && (
                   <Button onClick={() => router.push('/auth/login')} variant="outline" size="sm" className="gap-2 bg-transparent">
                     <LogIn className="w-4 h-4" />
                     Accedi

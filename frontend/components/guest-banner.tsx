@@ -5,8 +5,11 @@ import { Card } from "@/components/ui/card"
 import { LogIn, X } from "lucide-react"
 import { useState } from "react"
 
-export function GuestBanner() {
-  const isGuest  = useState(false)
+interface GuestBannerProps {
+  isGuest: boolean
+}
+
+export function GuestBanner({ isGuest }: GuestBannerProps) {
   const [dismissed, setDismissed] = useState(false)
 
   if (!isGuest || dismissed) {

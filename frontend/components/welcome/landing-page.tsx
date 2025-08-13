@@ -15,11 +15,20 @@ import {
   Users,
 } from "lucide-react"
 import { useRouter } from "next/navigation"
+import { useState } from "react"
+import { SpeechToTextApp } from "../speech-to-text-app"
 
 export function LandingPage() {
+  const [guestMode, setGuestMode] = useState(false)
+
   const continueAsGuest = () => {
-    // Logica per continuare come ospite
+    setGuestMode(true)
   }
+
+  if (guestMode) {
+    return <SpeechToTextApp guestMode={true} />;
+  }
+  
   const router = useRouter()
 
   const handleLoginClick = () => {
@@ -70,7 +79,7 @@ export function LandingPage() {
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Button
-              onClick={continueAsGuest}
+              onClick={() => setGuestMode(true)}
               size="lg"
               className="bg-black hover:bg-gray-800 text-white px-8 py-3 rounded-full text-base font-medium shadow-lg hover:shadow-xl transition-all duration-200 cursor-pointer"
             >
