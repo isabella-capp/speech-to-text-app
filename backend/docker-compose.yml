@@ -1,16 +1,18 @@
-version: '3.8'
+version: "3.9"
+
 services:
-  postgres:
-    image: postgres:15
-    environment:
-      POSTGRES_DB: speech_to_text_db
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password123
+  stt-backend:
+    build: .
+    container_name: stt-backend
     ports:
-      - "5432:5432"
+      - "8000:8000"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-
-volumes:
-  postgres_data:
-
+      - .:/app
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: [gpu] # Solo se vuoi usare GPU
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+    runtime: nvidia # Necessario per GPU

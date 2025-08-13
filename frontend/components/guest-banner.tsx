@@ -3,11 +3,10 @@
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { LogIn, X } from "lucide-react"
-import { useAuth } from "@/hooks/use-auth"
 import { useState } from "react"
 
 export function GuestBanner() {
-  const { isGuest, showAuth } = useAuth()
+  const isGuest  = useState(false)
   const [dismissed, setDismissed] = useState(false)
 
   if (!isGuest || dismissed) {

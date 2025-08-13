@@ -4,28 +4,19 @@ import type React from "react"
 
 import { useCallback } from "react"
 import { Button } from "@/components/ui/button"
-import { Upload, FileAudio, Trash2, Loader2 } from "lucide-react"
+import { Upload, FileAudio, Trash2 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 
 interface AudioUploaderProps {
   audioFile: File | null
   onFileSelect: (file: File) => void
   onFileRemove: () => void
-  onTranscribe: () => void
-  isTranscribing: boolean
+  onTranscribe: (file: File) => void
   dragActive: boolean
   onDragActiveChange: (active: boolean) => void
 }
 
-export function AudioUploader({
-  audioFile,
-  onFileSelect,
-  onFileRemove,
-  onTranscribe,
-  isTranscribing,
-  dragActive,
-  onDragActiveChange,
-}: AudioUploaderProps) {
+export function AudioUploader({ audioFile, onFileSelect, onFileRemove, onTranscribe, dragActive, onDragActiveChange }: AudioUploaderProps) {
   const { toast } = useToast()
 
   const handleDrag = useCallback(
@@ -101,18 +92,13 @@ export function AudioUploader({
               <p className="text-sm text-green-600">{(audioFile.size / 1024 / 1024).toFixed(2)} MB</p>
             </div>
             <div className="flex gap-2 justify-center">
-              <Button onClick={onTranscribe} disabled={isTranscribing} className="py-5 rounded-full bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700">
-                {isTranscribing ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Trascrizione in corso...
-                  </>
-                ) : (
-                  <>
-                    <FileAudio className="w-4 h-4" />
-                    Trascrivi
-                  </>
-                )}
+              <Button 
+                onClick={() => audioFile && onTranscribe(audioFile)} 
+                className="py-5 rounded-full bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700"
+                disabled={!audioFile}
+              >
+                <FileAudio className="w-4 h-4" />
+                Trascrivi
               </Button>
               <Button onClick={onFileRemove} variant="outline" className="py-5 rounded-full bg-gradient-to-r from-red-400 to-red-600 hover:from-orange-600 hover:to-red-700">
                 <Trash2 className="w-4 h-4" />

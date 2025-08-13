@@ -12,7 +12,6 @@ export interface TranscriptionMessage {
   audioFile?: {
     name: string
     size: number
-    duration?: number
   }
   timestamp: Date
 }

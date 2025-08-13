@@ -19,9 +19,10 @@ interface ChatViewProps {
   onStartRecording: () => void
   onTranscribe: (file: File) => void
   isTranscribing: boolean
+  partialTranscription?: string
 }
 
-export function ChatView({ session, onFileSelect, onStartRecording, onTranscribe, isTranscribing }: ChatViewProps) {
+export function ChatView({ session, onFileSelect, onStartRecording, onTranscribe, isTranscribing, partialTranscription }: ChatViewProps) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [showRecorder, setShowRecorder] = useState(false)
   const [recordedFile, setRecordedFile] = useState<File | null>(null)
@@ -142,10 +143,23 @@ export function ChatView({ session, onFileSelect, onStartRecording, onTranscribe
                 <Loader2 className="w-4 h-4 text-white animate-spin" />
               </div>
               <div className="max-w-[80%] rounded-2xl p-4 bg-gray-100 text-gray-900 border border-gray-200 ml-4">
-                <div className="flex items-center gap-2">
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Trascrizione in corso...</span>
-                </div>
+                {partialTranscription ? (
+                  <div>
+                    <div className="flex items-center gap-2 mb-2">
+                      <Loader2 className="w-4 h-4 animate-spin text-blue-600" />
+                      <span className="text-sm text-blue-600 font-medium">Trascrizione in corso...</span>
+                    </div>
+                    <div className="text-gray-800">
+                      {partialTranscription}
+                      <span className="inline-block w-2 h-4 bg-blue-600 ml-1 animate-pulse"></span>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Trascrizione in corso...</span>
+                  </div>
+                )}
               </div>
             </div>
           )}

@@ -1,15 +1,15 @@
-"use client"
-
-import { AuthFlow } from "@/components/auth/auth-flow"
-import { AuthProvider } from "@/components/auth/auth-provider"
 import { SpeechToTextApp } from "@/components/speech-to-text-app"
+import { LandingPage } from "@/components/welcome/landing-page"
+import { auth } from "@/lib/auth"
 
-export default function Page() {
+export default async function Page() {
+  const session = await auth()
+
   return (
-    <AuthProvider>
-      <AuthFlow>
-        <SpeechToTextApp />
-      </AuthFlow>
-    </AuthProvider>
+    !session ? (
+      <LandingPage />
+    ) : (
+      <SpeechToTextApp />
+    )
   )
 }
