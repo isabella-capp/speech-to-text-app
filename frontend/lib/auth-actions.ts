@@ -7,7 +7,17 @@ import { signUp } from "./auth-api"
 
 export async function authenticate(formData: FormData) {
   try {
-    await signIn('credentials', formData)
+    const result = await signIn('credentials', {
+      email: formData.get('email'),
+      password: formData.get('password'),
+      redirect: false, 
+    })
+    
+    if (result?.error) {
+      return { error: 'Credenziali non valide' }
+    }
+    
+    redirect('/transcribe')
   } catch (error) {
     if (error instanceof AuthError) {
       switch (error.type) {

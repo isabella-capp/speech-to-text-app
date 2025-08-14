@@ -38,6 +38,24 @@ export function LoginForm({ onBack }: LoginFormProps) {
   const [registerName, setRegisterName] = useState("")
   const [registerEmail, setRegisterEmail] = useState("")
   const [registerPassword, setRegisterPassword] = useState("")
+  const [error, setError] = useState<string | null>(null)
+  
+  const handleLoginSubmit = async (formData: FormData) => {
+    setIsLoading(true)
+    setError(null)
+    
+    try {
+      const result = await authenticate(formData)
+      if (result?.error) {
+        setError(result.error)
+      }
+      // Se non c'è errore, authenticate farà il redirect
+    } catch (error) {
+      setError('Errore durante il login')
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   const handleContinueAsGuest = () => {
     redirect("/")
@@ -107,7 +125,7 @@ export function LoginForm({ onBack }: LoginFormProps) {
             </TabsList>
 
             <TabsContent value="login" className="space-y-4 mt-4">
-              <form action={authenticate} className="space-y-4">
+              <form action={handleLoginSubmit} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="login-email" className="text-sm font-medium">
                     Email
