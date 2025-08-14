@@ -24,6 +24,7 @@ import { signIn } from "@/lib/auth"
 import { authenticate, signUpAction } from "@/lib/auth-actions"
 import GitHubSignIn from "@/components/auth/github-sign-in"
 import GoogleSignIn from "@/components/auth/google-sign-in"
+import { redirect } from "next/navigation"
 
 interface LoginFormProps {
   onBack?: () => void
@@ -39,7 +40,7 @@ export function LoginForm({ onBack }: LoginFormProps) {
   const [registerPassword, setRegisterPassword] = useState("")
 
   const handleContinueAsGuest = () => {
-    console.log("Continuing as guest")
+    redirect("/")
   }
 
   return (
@@ -117,6 +118,7 @@ export function LoginForm({ onBack }: LoginFormProps) {
                       id="login-email"
                       name="email"
                       type="email"
+                      className="pl-10"
                       required
                     />
                   </div>
@@ -132,6 +134,7 @@ export function LoginForm({ onBack }: LoginFormProps) {
                       id="login-password"
                       type="password"
                       name="password"
+                      className="pl-10"
                       required
                     />
                     <Button
