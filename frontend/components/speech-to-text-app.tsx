@@ -118,12 +118,14 @@ export function SpeechToTextApp({ guestMode = false }: { guestMode?: boolean }) 
   return (
     <SidebarProvider>
       <div className="flex h-screen w-full">
-        <AppSidebar
-          sessions={sessions}
-          onDeleteSession={deleteSession}
-          onClearAllSessions={clearAllSessions}
-          onNewSession={handleNewSession}
-        />
+        {!isGuest && (
+          <AppSidebar
+            sessions={sessions}
+            onDeleteSession={deleteSession}
+            onClearAllSessions={clearAllSessions}
+            onNewSession={handleNewSession}
+          />
+        )}
 
         <div className="flex-1 flex flex-col h-screen">
           {/* Guest Banner */}
@@ -150,13 +152,13 @@ export function SpeechToTextApp({ guestMode = false }: { guestMode?: boolean }) 
               </div>
               <div className="flex items-center gap-2">
                 {isGuest && (
-                  <Button onClick={() => router.push('/auth/login')} variant="outline" size="sm" className="gap-2 bg-transparent">
+                  <Button onClick={() => router.push('/auth/login')} variant="outline" size="sm" className="gap-2 bg-transparent py-4 rounded-full cursor-pointer">
                     <LogIn className="w-4 h-4" />
                     Accedi
                   </Button>
                 )}
                 {currentSession && (
-                  <Button onClick={handleNewSession} variant="outline" size="sm" className="gap-2 bg-transparent">
+                  <Button onClick={handleNewSession} variant="outline" size="sm" className="gap-2 bg-transparent rounded-full cursor-pointer">
                     <Plus className="w-4 h-4" />
                     Nuova
                   </Button>
