@@ -3,10 +3,21 @@
 import { signIn, signOut } from "@/lib/auth"
 import { AuthError } from "next-auth"
 import { redirect } from "next/navigation"
+import { signUp } from "./auth-api"
 
 export async function authenticate(formData: FormData) {
   try {
-    await signIn('credentials', formData)
+    const result = await signIn('credentials', {
+      email: formData.get('email'),
+      password: formData.get('password'),
+      redirect: false, 
+    })
+    
+    if (result?.error) {
+      return { error: 'Credenziali non valide' }
+    }
+    
+    redirect('/transcribe')
   } catch (error) {
     if (error instanceof AuthError) {
       switch (error.type) {
@@ -17,6 +28,14 @@ export async function authenticate(formData: FormData) {
       }
     }
     throw error
+  }
+}
+
+export async function signUpAction(formData: FormData) {
+  "use server";
+  const res = await signUp(formData);
+  if (res.successMessage) {
+    redirect("/auth/login");
   }
 }
 
@@ -37,5 +56,5 @@ export async function signOutAction() {
 
 export async function logoutAction() {
   "use server";
-  await signOut()
+  await signOut({ redirectTo: "/" })
 }
