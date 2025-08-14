@@ -152,13 +152,13 @@ export function SpeechToTextApp({ guestMode = false }: { guestMode?: boolean }) 
               </div>
               <div className="flex items-center gap-2">
                 {isGuest && (
-                  <Button onClick={() => router.push('/auth/login')} variant="outline" size="sm" className="gap-2 bg-transparent py-4 rounded-full cursor-pointer">
+                  <Button onClick={() => router.push('/auth/login')} variant="outline" size="sm" className="gap-2 bg-transparent py-4 rounded-full">
                     <LogIn className="w-4 h-4" />
                     Accedi
                   </Button>
                 )}
                 {currentSession && (
-                  <Button onClick={handleNewSession} variant="outline" size="sm" className="gap-2 bg-transparent rounded-full cursor-pointer">
+                  <Button onClick={handleNewSession} variant="outline" size="sm" className="gap-2 bg-transparent rounded-full">
                     <Plus className="w-4 h-4" />
                     Nuova
                   </Button>

@@ -77,7 +77,7 @@ export function LandingPage() {
             <Button
               onClick={() => setGuestMode(true)}
               size="lg"
-              className="bg-black hover:bg-gray-800 text-white px-8 py-3 rounded-full text-base font-medium shadow-lg hover:shadow-xl transition-all duration-200 cursor-pointer"
+              className="bg-black hover:bg-gray-800 text-white px-8 py-3 rounded-full text-base font-medium shadow-lg hover:shadow-xl transition-all duration-200"
             >
               Prova SpeechGPT
               <ArrowRight className="w-4 h-4 ml-2" />
@@ -86,7 +86,7 @@ export function LandingPage() {
               onClick={handleLoginClick}
               variant="outline"
               size="lg"
-              className="border-gray-300 text-gray-700 hover:bg-gray-50 px-8 py-3 rounded-full text-base font-medium bg-transparent cursor-pointer"
+              className="border-gray-300 text-gray-700 hover:bg-gray-50 px-8 py-3 rounded-full text-base font-medium bg-transparent"
             >
               Crea un Account
               <ArrowRight className="w-4 h-4 ml-2" />

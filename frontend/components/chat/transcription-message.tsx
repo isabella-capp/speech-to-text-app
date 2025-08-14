@@ -69,7 +69,7 @@ export function TranscriptionMessage({ message, sessionTitle }: TranscriptionMes
         <p className="whitespace-pre-wrap">{message.content}</p>
         {message.type === "assistant" && (
           <div className="flex gap-2 mt-3 pt-3 border-t border-gray-200">
-            <Button onClick={() => copyTranscription(message.content)} variant="ghost" size="sm" className="gap-2 h-8 hover:bg-gray-200/50 rounded-lg cursor-pointer">
+            <Button onClick={() => copyTranscription(message.content)} variant="ghost" size="sm" className="gap-2 h-8 hover:bg-gray-200/50 rounded-lg">
               <Copy className="w-3 h-3" />
               Copia
             </Button>
@@ -77,7 +77,7 @@ export function TranscriptionMessage({ message, sessionTitle }: TranscriptionMes
               onClick={() => downloadTranscription(message.content, sessionTitle || "trascrizione")}
               variant="ghost"
               size="sm"
-              className="gap-2 h-8 hover:bg-gray-200/50 rounded-lg cursor-pointer"
+              className="gap-2 h-8 hover:bg-gray-200/50 rounded-lg"
             >
               <Download className="w-3 h-3" />
               Download
