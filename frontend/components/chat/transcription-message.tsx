@@ -57,11 +57,6 @@ export function TranscriptionMessage({ message, sessionTitle }: TranscriptionMes
                 <Badge variant="default" className="text-xs bg-white/40">
                   {(message.audioFile.size / 1024 / 1024).toFixed(2)} MB
                 </Badge>
-                {message.audioFile.duration && (
-                  <Badge variant="secondary" className="text-xs bg-white/40">
-                    {message.audioFile.duration}s
-                  </Badge>
-                )}
               </div>
             </div>
           </div>
