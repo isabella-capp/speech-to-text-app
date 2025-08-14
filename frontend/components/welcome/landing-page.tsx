@@ -21,10 +21,6 @@ import { SpeechToTextApp } from "../speech-to-text-app"
 export function LandingPage() {
   const [guestMode, setGuestMode] = useState(false)
 
-  const continueAsGuest = () => {
-    setGuestMode(true)
-  }
-
   if (guestMode) {
     return <SpeechToTextApp guestMode={true} />;
   }
