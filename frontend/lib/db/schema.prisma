@@ -14,13 +14,15 @@ model User {
   password      String?
   emailVerified DateTime?
   image         String?
+
   accounts      Account[]
   sessions      Session[]
-  // Optional for WebAuthn support
-  Authenticator Authenticator[]
+  Authenticator Authenticator[] // Optional for WebAuthn support
+  chats         Chat[]
+  transcriptions Transcription[]
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }
 
 model Account {
@@ -50,10 +52,11 @@ model Session {
   sessionToken String   @unique
   userId       String
   expires      DateTime
+
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }
 
 model VerificationToken {
@@ -78,4 +81,46 @@ model Authenticator {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@id([userId, credentialID])
+}
+
+model Chat {
+  id        String   @id @default(cuid())
+  title     String
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages  Message[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Message {
+  id        String      @id @default(cuid())
+  content   String
+  audioName String?
+  audioSize Int?
+  audioPath String?
+  modelName String?
+  type      MessageType @default(TRANSCRIPTION)
+  chatId    String
+  chat      Chat        @relation(fields: [chatId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum MessageType {
+  USER
+  ASSISTANT
+  TRANSCRIPTION
+}
+
+model Transcription {
+  id         String   @id @default(cuid())
+  transcript String
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 }

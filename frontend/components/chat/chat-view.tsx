@@ -8,13 +8,13 @@ import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Badge } from "@/components/ui/badge"
 import { Upload, Mic, Send, Square, Play, Pause, RotateCcw, Check, Volume2, Loader2, X } from "lucide-react"
-import type { TranscriptionSession } from "@/types/transcription"
+import type { TranscriptionChat } from "@/types/transcription"
 import { TranscriptionMessage } from "./transcription-message"
 import { useAudioRecorder } from "@/hooks/use-audio-recorder"
 import { useToast } from "@/hooks/use-toast"
 
 interface ChatViewProps {
-  session: TranscriptionSession
+  session: TranscriptionChat
   onFileSelect: (file: File) => void
   onStartRecording: () => void
   onTranscribe: (file: File) => void

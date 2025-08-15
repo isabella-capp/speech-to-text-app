@@ -3,10 +3,10 @@
 import { Button } from "@/components/ui/button"
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { Plus } from "lucide-react"
-import { TranscriptionSession } from "@/types/transcription"
+import { TranscriptionChat } from "@/types/transcription"
 
 interface HeaderProps {
-  currentSession: TranscriptionSession | null
+  currentSession: TranscriptionChat | null
   onReset: () => void
 }
 

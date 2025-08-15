@@ -1,7 +1,7 @@
 # backend/app/main.py
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routers import route_wav2vec2, health, auth
+from app.routers import route_wav2vec2, health
 from app.config import settings
 from app.routers import route_whisper
 
@@ -17,7 +17,6 @@ app.add_middleware(
 )
 
 # Includo i router
-app.include_router(auth.router, prefix="/auth", tags=["auth"])
 app.include_router(route_wav2vec2.router, prefix="/wav2vec2", tags=["wav2vec2"])
 app.include_router(route_whisper.router, prefix="/whisper", tags=["whisper"])
 app.include_router(health.router, prefix="/health", tags=["health"])

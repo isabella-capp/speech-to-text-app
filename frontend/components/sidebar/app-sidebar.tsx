@@ -38,13 +38,13 @@ import {
   AudioLines,
   LogOut,
 } from "lucide-react"
-import type { TranscriptionSession } from "@/types/transcription"
+import type { TranscriptionChat } from "@/types/transcription"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { cn } from "@/lib/utils"
 import { logoutAction } from "@/lib/auth-actions"
 
 interface AppSidebarProps {
-  sessions: TranscriptionSession[]
+  sessions: TranscriptionChat[]
   onDeleteSession: (sessionId: string) => void
   onClearAllSessions: () => void
   onNewSession: () => void
@@ -145,40 +145,37 @@ export function AppSidebar({ sessions, onDeleteSession, onClearAllSessions, onNe
                 <SidebarMenuItem key={session.id}>
                   <div className="group flex items-center w-full mb-2">
                     <SidebarMenuButton
-                      asChild
                       className="flex-1 justify-start group-data-[collapsible=icon]:hidden py-5 hover:bg-[#f0f2f4]/60"
                       title={session.title}
                     >
-                      <button className="w-full text-left rounded-lg ">
-                        <MessageSquare className="w-4 h-4 mr-2 flex-shrink-0" />
-                        <div className="flex-1 min-w-0">
-                          <div className="truncate font-medium">{session.title}</div>
-                          <div className="text-xs text-gray-500 truncate">
-                            {session.timestamp.toLocaleDateString("it-IT")}
-                          </div>
+                      <MessageSquare className="w-4 h-4 mr-2 flex-shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <div className="truncate font-medium">{session.title}</div>
+                        <div className="text-xs text-gray-500 truncate">
+                          {session.timestamp.toLocaleDateString("it-IT")}
                         </div>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="opacity-0 group-hover:opacity-100 transition-opacity group-data-[collapsible=icon]:hidden"
-                            >
-                              <MoreHorizontal className="w-4 h-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <div className="px-2 py-1.5 text-sm font-medium">{session?.id}</div>
-                            <div className="px-2 py-1.5 text-xs text-gray-500">{session?.title}</div>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem onClick={() => onDeleteSession(session.id)} className="text-red-600">
-                              <Trash2 className="w-4 h-4 mr-2" />
-                              Elimina
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </button>
+                      </div>
                     </SidebarMenuButton>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="opacity-0 group-hover:opacity-100 transition-opacity group-data-[collapsible=icon]:hidden"
+                        >
+                          <MoreHorizontal className="w-4 h-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <div className="px-2 py-1.5 text-sm font-medium">{session?.id}</div>
+                        <div className="px-2 py-1.5 text-xs text-gray-500">{session?.title}</div>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={() => onDeleteSession(session.id)} className="text-red-600">
+                          <Trash2 className="w-4 h-4 mr-2" />
+                          Elimina
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
                 </SidebarMenuItem>
               ))
@@ -298,7 +295,7 @@ export function AppSidebar({ sessions, onDeleteSession, onClearAllSessions, onNe
                           variant="ghost"
                           className="w-full justify-start gap-3 p-3 h-auto hover:bg-gray-50"
                           onClick={() => {
-                            // Logica per selezionare la sessione
+                            // Logica per selezionare la chat
                             setShowSearchDialog(false)
                           }}
                         >
@@ -323,7 +320,7 @@ export function AppSidebar({ sessions, onDeleteSession, onClearAllSessions, onNe
                           variant="ghost"
                           className="w-full justify-start gap-3 p-3 h-auto hover:bg-gray-50"
                           onClick={() => {
-                            // Logica per selezionare la sessione
+                            // Logica per selezionare la chat
                             setShowSearchDialog(false)
                           }}
                         >
