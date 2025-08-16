@@ -156,3 +156,17 @@
 .glow-effect:hover {
   box-shadow: 0 0 30px rgba(59, 130, 246, 0.7);
 }
+
+/* Smooth scrolling for chat */
+.smooth-scroll {
+  scroll-behavior: smooth;
+}
+
+.scroll-area-viewport {
+  scroll-behavior: smooth;
+}
+
+/* Ensure proper scrolling in Radix ScrollArea */
+[data-radix-scroll-area-viewport] {
+  scroll-behavior: smooth;
+}
