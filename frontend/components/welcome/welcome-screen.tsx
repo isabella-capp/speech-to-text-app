@@ -4,17 +4,77 @@ import { useState } from "react"
 import { AudioWaveformIcon as Waveform } from "lucide-react"
 import { AudioUploader } from "../audio/audio-upload"
 import { AudioRecorder } from "../audio/audio-recorder"
+import { useRouter } from "next/navigation"
+import { useToast } from "@/hooks/use-toast"
+import { useModel } from "@/contexts/model-context"
 
-interface WelcomeScreenProps {
-  onTranscribe: (file: File) => void
-}
-
-export function WelcomeScreen({ onTranscribe }: WelcomeScreenProps) {
+export default function WelcomeScreen({guestMode = false}: { guestMode?: boolean }) {
+  const { toast } = useToast()
+  const router = useRouter()
+  const { selectedModel } = useModel() // Ora puoi accedere al modello selezionato
+  const [isGuest] = useState(guestMode)
   const [audioFile, setAudioFile] = useState<File | null>(null)
   const [dragActive, setDragActive] = useState(false)
+  const [isTranscribing, setIsTranscribing] = useState(false)
+
+  console.log("WelcomeScreen - modalità guest:", isGuest)
+  console.log("WelcomeScreen - modello selezionato:", selectedModel)
 
   const handleRecordingComplete = (file: File) => {
     setAudioFile(file)
+  }
+
+  const onTranscribe = async (file: File) => {
+    setIsTranscribing(true)
+    try {
+      console.log("Iniziando trascrizione per file:", file.name)
+      console.log("Usando modello:", selectedModel)
+      
+      const formData = new FormData()
+      formData.append("audio", file)
+      formData.append("model", selectedModel) // Aggiungi il modello alla richiesta
+
+      const response = await fetch("/api/transcribe", {
+        method: "POST",
+        body: formData,
+      })
+
+      console.log("Risposta API ricevuta:", response.status)
+
+      if (!response.ok) {
+        const errorData = await response.text()
+        console.error("Errore API:", errorData)
+        throw new Error("Errore nella trascrizione")
+      }
+
+      const data = await response.json()
+      console.log("Dati ricevuti:", data)
+      console.log("ID chat:", data.chat?.id)
+      
+      if (data.chat?.id) {
+        let targetPath: string
+        
+        if (isGuest || data.chat.isGuest) {
+          targetPath = `/transcribe/chat/guest-${data.chat.id}`
+        } else {
+          targetPath = `/transcribe/chat/${data.chat.id}`
+        }
+        
+        console.log("Navigando verso:", targetPath)
+        router.push(targetPath)
+      } else {
+        throw new Error("ID chat mancante nella risposta")
+      }
+    } catch (error: any) {
+      console.error("Errore completo:", error)
+      toast({
+        title: "Errore",
+        description: error.message || "Impossibile trascrivere il file",
+        variant: "destructive",
+      })
+    } finally {
+      setIsTranscribing(false)
+    }
   }
 
   return (
@@ -34,9 +94,11 @@ export function WelcomeScreen({ onTranscribe }: WelcomeScreenProps) {
         onTranscribe={(file) => onTranscribe(file)}
         dragActive={dragActive}
         onDragActiveChange={setDragActive}
+        isTranscribing={isTranscribing}
       />
 
       <AudioRecorder onRecordingComplete={handleRecordingComplete} />
     </div>
   )
 }
+

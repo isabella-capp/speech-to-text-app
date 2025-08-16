@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react'
 import type { ModelType } from '@/types/transcription'
+import { on } from 'events'
 
 interface UseTranscriptionOptions {
   onError?: (error: Error) => void
@@ -17,13 +18,11 @@ export function useTranscription(options: UseTranscriptionOptions = {}) {
     setIsTranscribing(true)
 
     try {
-      // Determina l'endpoint in base al modello
       const endpoint = model === 'whisper' ? '/whisper/transcribe' : '/wav2vec2/transcribe'
       const apiUrl = `http://127.0.0.1:8000${endpoint}`
 
       console.log(`Transcribing with ${model} model at:`, apiUrl)
 
-      // Prepara i dati per il form
       const formData = new FormData()
       formData.append('file', audioFile)
 
@@ -39,7 +38,7 @@ export function useTranscription(options: UseTranscriptionOptions = {}) {
       if (!response.ok) {
         const errorText = await response.text()
         console.error('API Error Response:', errorText)
-        throw new Error(`HTTP ${response.status}: ${errorText}`)
+        onError?.(new Error(`HTTP ${response.status}: ${errorText}`))
       }
 
       const result: TranscriptionResponse = await response.json()

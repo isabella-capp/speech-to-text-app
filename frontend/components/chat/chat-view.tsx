@@ -19,17 +19,19 @@ interface ChatViewProps {
   onStartRecording: () => void
   onTranscribe: (file: File) => void
   isTranscribing: boolean
-  partialTranscription?: string
+  guestMode: boolean
 }
 
-export function ChatView({ session, onFileSelect, onStartRecording, onTranscribe, isTranscribing, partialTranscription }: ChatViewProps) {
+export function ChatView({ session, onTranscribe, isTranscribing, guestMode }: ChatViewProps) {
+  const [audioUrl, setAudioUrl] = useState<string | null>(null)
+  const [audioElement, setAudioElement] = useState<HTMLAudioElement | null>(null)
+  const [isPlaying, setIsPlaying] = useState(false)
+  const scrollAreaRef = useRef<HTMLDivElement>(null)
+  const messagesEndRef = useRef<HTMLDivElement>(null)
+  
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [showRecorder, setShowRecorder] = useState(false)
   const [recordedFile, setRecordedFile] = useState<File | null>(null)
-  const [audioUrl, setAudioUrl] = useState<string | null>(null)
-  const [isPlaying, setIsPlaying] = useState(false)
-  const [audioElement, setAudioElement] = useState<HTMLAudioElement | null>(null)
-  const scrollAreaRef = useRef<HTMLDivElement>(null)
   const { toast } = useToast()
 
   const { isRecording, isPaused, recordingTime, formatTime, startRecording, togglePauseRecording, stopRecording } =
@@ -37,13 +39,54 @@ export function ChatView({ session, onFileSelect, onStartRecording, onTranscribe
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
-    if (scrollAreaRef.current) {
-      const scrollContainer = scrollAreaRef.current.querySelector("[data-radix-scroll-area-viewport]")
-      if (scrollContainer) {
-        scrollContainer.scrollTop = scrollContainer.scrollHeight
+    const scrollToBottom = () => {
+      // Method 1: Using the messagesEndRef with better options
+      if (messagesEndRef.current) {
+        messagesEndRef.current.scrollIntoView({ 
+          behavior: 'smooth',
+          block: 'nearest',
+          inline: 'nearest'
+        })
+      }
+
+      // Method 2: Direct scroll to bottom of viewport
+      if (scrollAreaRef.current) {
+        const viewport = scrollAreaRef.current.querySelector("[data-radix-scroll-area-viewport]")
+        if (viewport) {
+          viewport.scrollTo({
+            top: viewport.scrollHeight,
+            behavior: 'smooth'
+          })
+        }
       }
     }
-  }, [session.messages])
+
+    // Use requestAnimationFrame for better performance
+    const timeoutId = requestAnimationFrame(() => {
+      scrollToBottom()
+      // Secondary scroll after DOM updates
+      setTimeout(scrollToBottom, 50)
+    })
+
+    return () => cancelAnimationFrame(timeoutId)
+  }, [session.messages.length]) // Solo quando cambia il numero di messaggi
+
+  // Additional scroll effect for when transcription starts/stops
+  useEffect(() => {
+    if (isTranscribing) {
+      const timeoutId = setTimeout(() => {
+        if (messagesEndRef.current) {
+          messagesEndRef.current.scrollIntoView({ 
+            behavior: 'smooth',
+            block: 'nearest',
+            inline: 'nearest'
+          })
+        }
+      }, 100)
+      
+      return () => clearTimeout(timeoutId)
+    }
+  }, [isTranscribing])
 
   const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -130,7 +173,7 @@ export function ChatView({ session, onFileSelect, onStartRecording, onTranscribe
 
   return (
     <div className="h-full flex flex-col">
-      <ScrollArea ref={scrollAreaRef} className="flex-1 p-4">
+      <ScrollArea ref={scrollAreaRef} className="flex-1 p-4 smooth-scroll">
         <div className="max-w-3xl mx-auto space-y-6">
           {session.messages.map((message) => (
             <TranscriptionMessage key={message.id} message={message} sessionTitle={session.title} />
@@ -142,27 +185,16 @@ export function ChatView({ session, onFileSelect, onStartRecording, onTranscribe
               <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
                 <Loader2 className="w-4 h-4 text-white animate-spin" />
               </div>
-              <div className="max-w-[80%] rounded-2xl p-4 bg-gray-100 text-gray-900 border border-gray-200 ml-4">
-                {partialTranscription ? (
-                  <div>
-                    <div className="flex items-center gap-2 mb-2">
-                      <Loader2 className="w-4 h-4 animate-spin text-blue-600" />
-                      <span className="text-sm text-blue-600 font-medium">Trascrizione in corso...</span>
-                    </div>
-                    <div className="text-gray-800">
-                      {partialTranscription}
-                      <span className="inline-block w-2 h-4 bg-blue-600 ml-1 animate-pulse"></span>
-                    </div>
-                  </div>
-                ) : (
+              <div className="max-w-[80%] rounded-2xl p-4 bg-gray-100 text-gray-900 border border-gray-200 ml-4">   
                   <div className="flex items-center gap-2">
                     <Loader2 className="w-4 h-4 animate-spin" />
                     <span>Trascrizione in corso...</span>
                   </div>
-                )}
               </div>
             </div>
           )}
+          
+          <div ref={messagesEndRef} className="h-4" />
         </div>
       </ScrollArea>
 

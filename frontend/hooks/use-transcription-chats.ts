@@ -3,8 +3,10 @@
 import { useState, useEffect, useRef } from "react"
 import type { TranscriptionChat } from "@/types/transcription"
 import { useToast } from "@/hooks/use-toast"
+import { useSession } from "next-auth/react"
 
-export function useTranscriptionChats() {
+
+export function useTranscriptionChats(guestMode: boolean) {
   const [transcriptionChats, setTranscriptionChats] = useState<TranscriptionChat[]>([])
   const [loading, setLoading] = useState(true)
   const { toast } = useToast()
@@ -12,6 +14,7 @@ export function useTranscriptionChats() {
 
   useEffect(() => {
     if (hasLoaded.current) return // Previeni chiamate multiple
+    if (guestMode) return
     
     console.log('useTranscriptionChats: fetchChats chiamato')
     const fetchChats = async () => {
