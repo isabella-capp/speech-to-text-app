@@ -14,9 +14,10 @@ interface AudioUploaderProps {
   onTranscribe: (file: File) => void
   dragActive: boolean
   onDragActiveChange: (active: boolean) => void
+  isTranscribing: boolean
 }
 
-export function AudioUploader({ audioFile, onFileSelect, onFileRemove, onTranscribe, dragActive, onDragActiveChange }: AudioUploaderProps) {
+export function AudioUploader({ audioFile, onFileSelect, onFileRemove, onTranscribe, dragActive, onDragActiveChange, isTranscribing }: AudioUploaderProps) {
   const { toast } = useToast()
 
   const handleDrag = useCallback(
@@ -98,7 +99,7 @@ export function AudioUploader({ audioFile, onFileSelect, onFileRemove, onTranscr
                 disabled={!audioFile}
               >
                 <FileAudio className="w-4 h-4" />
-                Trascrivi
+                {isTranscribing ? "Trascrivendo..." : "Trascrivi"}
               </Button>
               <Button onClick={onFileRemove} variant="outline" className="py-5 rounded-full bg-gradient-to-r from-red-400 to-red-600 hover:from-orange-600 hover:to-red-700">
                 <Trash2 className="w-4 h-4" />
