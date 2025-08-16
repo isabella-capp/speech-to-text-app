@@ -1,28 +1,24 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 import {
-  AudioWaveformIcon as Waveform,
-  Search,
-  Copy,
   ArrowRight,
-  Mic,
-  Upload,
-  Zap,
-  Shield,
-  Globe,
-  Users,
+  AudioWaveformIcon as Waveform,
 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
-import { SpeechToTextApp } from "../speech-to-text-app"
+import WelcomeScreen from "./welcome-screen"
+import TranscribeLayout from "@/app/transcribe/layout"
 
 export function LandingPage() {
   const [guestMode, setGuestMode] = useState(false)
 
   if (guestMode) {
-    return <SpeechToTextApp guestMode={true} />;
+    return (
+      <TranscribeLayout guestMode={true}>
+        <WelcomeScreen guestMode={true} />
+      </TranscribeLayout>
+    );
   }
   
   const router = useRouter()
