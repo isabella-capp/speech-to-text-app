@@ -42,15 +42,20 @@ import type { TranscriptionChat } from "@/types/transcription"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { cn } from "@/lib/utils"
 import { logoutAction } from "@/lib/auth-actions"
+import { useSession } from "next-auth/react"
+import { DropdownMenuLabel } from "@radix-ui/react-dropdown-menu"
 
 interface AppSidebarProps {
   sessions: TranscriptionChat[]
   onDeleteSession: (sessionId: string) => void
   onClearAllSessions: () => void
   onNewSession: () => void
+  isGuest?: boolean
 }
 
-export function AppSidebar({ sessions, onDeleteSession, onClearAllSessions, onNewSession }: AppSidebarProps) {
+export function AppSidebar({ sessions, onDeleteSession, onClearAllSessions, onNewSession, isGuest = false }: AppSidebarProps) {
+  const session = useSession()
+  console.log("AppSidebar session:", session)
   const [searchQuery, setSearchQuery] = useState("")
   const [showSearchDialog, setShowSearchDialog] = useState(false)
   const [showTriggerOnHover, setShowTriggerOnHover] = useState(false)
@@ -193,18 +198,32 @@ export function AppSidebar({ sessions, onDeleteSession, onClearAllSessions, onNe
                 "group-data-[collapsible=icon]:w-8 group-data-[collapsible=icon]:h-8",
                 "group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:justify-center",
                 "group-data-[collapsible=icon]:rounded-lg",
-                "w-full justify-start gap-2 p-5"
+                "w-full justify-start gap-3 p-5"
               )}
               title="Menu utente"
             >
-              <div
-                className="w-6 h-6 bg-black rounded-full flex items-center justify-center">
-                <User className="w-3 h-3 text-white" />
+              <div className="w-6 h-6 rounded-full overflow-hidden bg-black flex items-center justify-center">
+                {session?.data?.user?.image ? (
+                  <img
+                    src={session.data.user.image}
+                    alt="User avatar"
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <User className="w-3 h-3 text-white" />
+                )}
               </div>
-              <span className="group-data-[collapsible=icon]:hidden">Utente</span>
+
+              <span className="group-data-[collapsible=icon]:hidden">{session?.data?.user?.name}</span>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="w-56">
+            <DropdownMenuLabel className="flex flex-row items-center gap-2 px-2 py-2">
+              <User className="w-4 h-4 text-gray-400" />
+              <span className="text-sm text-gray-400 truncate">
+                {session?.data?.user?.email || "Non disponibile"}
+              </span>
+            </DropdownMenuLabel>
             <DropdownMenuItem>
               <Settings className="w-4 h-4 mr-2" />
               Impostazioni
