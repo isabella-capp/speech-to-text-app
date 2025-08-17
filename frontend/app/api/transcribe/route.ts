@@ -60,7 +60,7 @@ export async function POST(req: Request) {
       return NextResponse.json({
         success: true,
         chat: {
-          id: "guest-" + Date.now(), // ID temporaneo per la modalità guest
+          id: Date.now(), // ID temporaneo per la modalità guest
           title: transcriptText.length > 50 ? transcriptText.substring(0, 50) + "..." : transcriptText,
           isGuest: true
         },

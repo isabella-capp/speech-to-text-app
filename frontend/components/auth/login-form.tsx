@@ -35,9 +35,6 @@ export function LoginForm({ onBack }: LoginFormProps) {
   const [showLoginPassword, setShowLoginPassword] = useState(false)
   const [showRegisterPassword, setShowRegisterPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
-  const [registerName, setRegisterName] = useState("")
-  const [registerEmail, setRegisterEmail] = useState("")
-  const [registerPassword, setRegisterPassword] = useState("")
   const [error, setError] = useState<string | null>(null)
   
   const handleLoginSubmit = async (formData: FormData) => {

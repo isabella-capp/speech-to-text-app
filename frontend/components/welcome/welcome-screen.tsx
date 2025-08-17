@@ -31,6 +31,7 @@ export default function WelcomeScreen() {
     try {
       console.log("Iniziando trascrizione per file:", file.name)
       console.log("Usando modello:", selectedModel)
+      console.log("Modalità guest:", isGuest)
       
       const formData = new FormData()
       formData.append("audio", file)
@@ -51,15 +52,68 @@ export default function WelcomeScreen() {
 
       const data = await response.json()
       console.log("Dati ricevuti:", data)
-      console.log("ID chat:", data.chat?.id)
       
-      if (data.chat?.id) {
-        let targetPath = `/transcribe/chat/guest-${data.chat.id}`
-       
-        console.log("Navigando verso:", targetPath)
-        router.push(targetPath)
+      if (isGuest) {
+        // Per gli utenti guest, crea un ID locale e gestisci tutto lato client
+        const guestChatId = `guest_${Date.now()}`
+        
+        // Crea la chat guest nel localStorage
+        const newChat = {
+          id: guestChatId,
+          title: "Nuova Chat",
+          timestamp: new Date(),
+          messages: [
+            {
+              id: `guest_msg_${Date.now()}_user`,
+              content: file.name,
+              type: "user" as const,
+              audioFile: {
+                name: file.name,
+                size: file.size,
+              },
+              timestamp: new Date(),
+              model: undefined,
+            },
+            {
+              id: `guest_msg_${Date.now()}_transcription`,
+              content: data.transcript || data.transcription,
+              type: "transcription" as const,
+              timestamp: new Date(),
+              model: data.model || selectedModel,
+            }
+          ]
+        }
+
+        // Salva nel localStorage
+        const existingChats = localStorage.getItem("guest_transcription_chats")
+        let guestChatsData: { chats: any[], timestamp: number } = { chats: [], timestamp: Date.now() }
+
+        if (existingChats) {
+          try {
+            guestChatsData = JSON.parse(existingChats)
+          } catch (error) {
+            console.error("Errore nel parsing delle chat guest:", error)
+          }
+        }
+
+        guestChatsData.chats.unshift(newChat)
+        guestChatsData.timestamp = Date.now()
+        localStorage.setItem("guest_transcription_chats", JSON.stringify(guestChatsData))
+
+        console.log("Chat guest creata:", newChat)
+        console.log("Navigando verso:", `/transcribe/chat/${guestChatId}`)
+        router.push(`/transcribe/chat/${guestChatId}`)
       } else {
-        throw new Error("ID chat mancante nella risposta")
+        // Per utenti autenticati, usa l'ID dal database
+        console.log("ID chat:", data.chat?.id)
+        
+        if (data.chat?.id) {
+          const targetPath = `/transcribe/chat/${data.chat.id}`
+          console.log("Navigando verso:", targetPath)
+          router.push(targetPath)
+        } else {
+          throw new Error("ID chat mancante nella risposta")
+        }
       }
     } catch (error: any) {
       console.error("Errore completo:", error)

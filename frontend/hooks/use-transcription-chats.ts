@@ -3,18 +3,76 @@
 import { useState, useEffect, useRef } from "react"
 import type { TranscriptionChat } from "@/types/transcription"
 import { useToast } from "@/hooks/use-toast"
-import { useSession } from "next-auth/react"
 
+const GUEST_STORAGE_KEY = "guest_transcription_chats"
+const GUEST_STORAGE_DURATION = 10 * 60 * 1000 // 10 minuti in millisecondi
 
-export function useTranscriptionChats(guestMode: boolean) {
+interface GuestStorageData {
+  chats: TranscriptionChat[]
+  timestamp: number
+}
+
+export function useTranscriptionChats(isGuest: boolean) {
   const [transcriptionChats, setTranscriptionChats] = useState<TranscriptionChat[]>([])
   const [loading, setLoading] = useState(true)
   const { toast } = useToast()
   const hasLoaded = useRef(false)
 
+  console.log("useTranscriptionChats - modalità guest:", isGuest)
+
+  // Funzioni per gestire il localStorage degli utenti guest
+  const getGuestChatsFromStorage = (): TranscriptionChat[] => {
+    try {
+      const stored = localStorage.getItem(GUEST_STORAGE_KEY)
+      if (!stored) return []
+
+      const data: GuestStorageData = JSON.parse(stored)
+      const now = Date.now()
+
+      // Verifica se i dati sono scaduti (più di 10 minuti)
+      if (now - data.timestamp > GUEST_STORAGE_DURATION) {
+        localStorage.removeItem(GUEST_STORAGE_KEY)
+        return []
+      }
+
+      // Converte le date da stringa a oggetto Date
+      return data.chats.map(chat => ({
+        ...chat,
+        timestamp: new Date(chat.timestamp),
+        messages: chat.messages.map(msg => ({
+          ...msg,
+          timestamp: new Date(msg.timestamp)
+        }))
+      }))
+    } catch (error) {
+      console.error("Errore nel caricamento delle chat guest:", error)
+      return []
+    }
+  }
+
+  const saveGuestChatsToStorage = (chats: TranscriptionChat[]) => {
+    try {
+      const data: GuestStorageData = {
+        chats,
+        timestamp: Date.now()
+      }
+      localStorage.setItem(GUEST_STORAGE_KEY, JSON.stringify(data))
+    } catch (error) {
+      console.error("Errore nel salvataggio delle chat guest:", error)
+    }
+  }
+  
   useEffect(() => {
     if (hasLoaded.current) return // Previeni chiamate multiple
-    if (guestMode) return
+    
+    if (isGuest) {
+      // Per gli utenti guest, carica dal localStorage
+      const guestChats = getGuestChatsFromStorage()
+      setTranscriptionChats(guestChats)
+      setLoading(false)
+      hasLoaded.current = true
+      return
+    }
     
     console.log('useTranscriptionChats: fetchChats chiamato')
     const fetchChats = async () => {
@@ -71,9 +129,29 @@ export function useTranscriptionChats(guestMode: boolean) {
     }
 
     fetchChats()
-  }, []) // Rimuoviamo la dipendenza toast
+  }, [isGuest]) // Aggiungiamo isGuest come dipendenza
 
   const addChat = async (chatData: TranscriptionChat) => {
+    if (isGuest) {
+      // Per gli utenti guest, salva solo nel localStorage
+      const newChat: TranscriptionChat = {
+        ...chatData,
+        id: `guest_${Date.now()}`, // ID temporaneo per gli utenti guest
+        timestamp: new Date(),
+      }
+
+      const updatedChats = [newChat, ...transcriptionChats]
+      setTranscriptionChats(updatedChats)
+      saveGuestChatsToStorage(updatedChats)
+
+      toast({
+        title: "Chat creata",
+        description: "La chat è stata salvata localmente (10 min)",
+      })
+
+      return newChat.id
+    }
+
     try {
       // Prima crea la chat
       const chatResponse = await fetch("/api/chats", {
@@ -130,6 +208,41 @@ export function useTranscriptionChats(guestMode: boolean) {
       audioFile?: File
     },
   ) => {
+    if (isGuest) {
+      // Per gli utenti guest, aggiungi il messaggio localmente
+      const newMessage = {
+        id: `guest_msg_${Date.now()}`,
+        type: messageData.type,
+        content: messageData.content,
+        timestamp: new Date(),
+        model: messageData.model,
+        audioFile: messageData.audioFile ? {
+          name: messageData.audioFile.name,
+          size: messageData.audioFile.size,
+        } : undefined,
+      }
+
+      const updatedChats = transcriptionChats.map((chat) =>
+        chat.id === chatId
+          ? {
+              ...chat,
+              messages: [...chat.messages, newMessage],
+              timestamp: new Date(),
+            }
+          : chat,
+      )
+
+      setTranscriptionChats(updatedChats)
+      saveGuestChatsToStorage(updatedChats)
+
+      toast({
+        title: "Messaggio aggiunto",
+        description: "Il messaggio è stato salvato localmente",
+      })
+
+      return newMessage
+    }
+
     try {
       const formData = new FormData()
       formData.append("content", messageData.content)
@@ -197,6 +310,19 @@ export function useTranscriptionChats(guestMode: boolean) {
   }
 
   const deleteChat = async (chatId: string) => {
+    if (isGuest) {
+      // Per gli utenti guest, rimuovi dal localStorage
+      const updatedChats = transcriptionChats.filter((chat) => chat.id !== chatId)
+      setTranscriptionChats(updatedChats)
+      saveGuestChatsToStorage(updatedChats)
+      
+      toast({
+        title: "Chat eliminata",
+        description: "La chat è stata rimossa dal localStorage",
+      })
+      return
+    }
+
     try {
       const response = await fetch(`/api/chats/${chatId}`, {
         method: "DELETE",
@@ -222,6 +348,18 @@ export function useTranscriptionChats(guestMode: boolean) {
   }
 
   const clearAllChats = async () => {
+    if (isGuest) {
+      // Per gli utenti guest, pulisci il localStorage
+      setTranscriptionChats([])
+      localStorage.removeItem(GUEST_STORAGE_KEY)
+      
+      toast({
+        title: "Cronologia pulita",
+        description: "Tutte le chat guest sono state eliminate",
+      })
+      return
+    }
+
     try {
       const response = await fetch("/api/chats", {
         method: "DELETE",
