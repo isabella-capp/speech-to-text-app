@@ -102,7 +102,7 @@ export default function WelcomeScreen() {
 
         console.log("Chat guest creata:", newChat)
         console.log("Navigando verso:", `/transcribe/chat/${guestChatId}`)
-        router.push(`/transcribe/chat/${guestChatId}`)
+        window.location.href = `/transcribe/chat/${guestChatId}`
       } else {
         // Per utenti autenticati, usa l'ID dal database
         console.log("ID chat:", data.chat?.id)
@@ -110,7 +110,7 @@ export default function WelcomeScreen() {
         if (data.chat?.id) {
           const targetPath = `/transcribe/chat/${data.chat.id}`
           console.log("Navigando verso:", targetPath)
-          router.push(targetPath)
+          window.location.href = targetPath
         } else {
           throw new Error("ID chat mancante nella risposta")
         }

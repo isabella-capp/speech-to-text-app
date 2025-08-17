@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -44,6 +44,7 @@ import { cn } from "@/lib/utils"
 import { logoutAction } from "@/lib/auth-actions"
 import { useSession } from "next-auth/react"
 import { DropdownMenuLabel } from "@radix-ui/react-dropdown-menu"
+import { redirect } from "next/navigation"
 
 interface AppSidebarProps {
   sessions: TranscriptionChat[]
@@ -53,9 +54,11 @@ interface AppSidebarProps {
   isGuest?: boolean
 }
 
-export function AppSidebar({ sessions, onDeleteSession, onClearAllSessions, onNewSession, isGuest = false }: AppSidebarProps) {
+export function AppSidebar({ sessions, onDeleteSession, onClearAllSessions, onNewSession }: AppSidebarProps) {
   const session = useSession()
-  console.log("AppSidebar session:", session)
+
+  console.log("AppSidebar sessions:", sessions)
+
   const [searchQuery, setSearchQuery] = useState("")
   const [showSearchDialog, setShowSearchDialog] = useState(false)
   const [showTriggerOnHover, setShowTriggerOnHover] = useState(false)
@@ -146,18 +149,19 @@ export function AppSidebar({ sessions, onDeleteSession, onClearAllSessions, onNe
                 <p className="text-sm">Nessuna trascrizione</p>
               </div>
             ) : (
-              sessions.map((session) => (
-                <SidebarMenuItem key={session.id}>
+              sessions.map((chat) => (
+                <SidebarMenuItem key={chat.id}>
                   <div className="group flex items-center w-full mb-2">
                     <SidebarMenuButton
                       className="flex-1 justify-start group-data-[collapsible=icon]:hidden py-5 hover:bg-[#f0f2f4]/60"
-                      title={session.title}
+                      onClick={() => redirect(chat.id)}
+                      title={chat.title}
                     >
                       <MessageSquare className="w-4 h-4 mr-2 flex-shrink-0" />
                       <div className="flex-1 min-w-0">
-                        <div className="truncate font-medium">{session.title}</div>
+                        <div className="truncate font-medium">{chat.title}</div>
                         <div className="text-xs text-gray-500 truncate">
-                          {session.timestamp.toLocaleDateString("it-IT")}
+                          {chat.timestamp.toLocaleDateString("it-IT")}
                         </div>
                       </div>
                     </SidebarMenuButton>
@@ -172,10 +176,7 @@ export function AppSidebar({ sessions, onDeleteSession, onClearAllSessions, onNe
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <div className="px-2 py-1.5 text-sm font-medium">{session?.id}</div>
-                        <div className="px-2 py-1.5 text-xs text-gray-500">{session?.title}</div>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={() => onDeleteSession(session.id)} className="text-red-600">
+                        <DropdownMenuItem onClick={() => onDeleteSession(chat.id)} className="text-red-600">
                           <Trash2 className="w-4 h-4 mr-2" />
                           Elimina
                         </DropdownMenuItem>

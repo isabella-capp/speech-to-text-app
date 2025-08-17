@@ -69,8 +69,8 @@ export async function POST(req: Request) {
     } 
 
     // Modalità autenticata: salva nel database
-    const title = transcriptText.length > 10
-      ? transcriptText.substring(0, 10) + "..."
+    const title = transcriptText.length > 25
+      ? transcriptText.substring(0, 25) + "..."
       : transcriptText
 
     if (!session.user?.id) {
