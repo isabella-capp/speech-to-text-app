@@ -1,5 +1,4 @@
-import { ModelProvider, useModel } from "@/contexts/model-context"
-import type { ModelType } from "@/types/transcription"
+import { ModelProvider } from "@/contexts/model-context"
 import TranscribeLayoutContent from "@/components/layout/transcribe-layout-content"
 import { auth } from "@/lib/auth"
 
