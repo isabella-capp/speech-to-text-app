@@ -11,6 +11,8 @@ export function useAudioRecorder() {
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
   const audioChunksRef = useRef<Blob[]>([])
   const timerRef = useRef<NodeJS.Timeout | null>(null)
+  const mimeTypeRef = useRef<string>("audio/webm")
+  const fileExtensionRef = useRef<string>("webm")
 
   const { toast } = useToast()
 
@@ -36,7 +38,29 @@ export function useAudioRecorder() {
   const startRecording = useCallback(async (): Promise<void> => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
-      const mediaRecorder = new MediaRecorder(stream)
+      
+      // Determina il formato audio supportato dal browser
+      let mimeType = "audio/webm"
+      let fileExtension = "webm"
+      
+      if (MediaRecorder.isTypeSupported("audio/webm;codecs=opus")) {
+        mimeType = "audio/webm;codecs=opus"
+        fileExtension = "webm"
+      } else if (MediaRecorder.isTypeSupported("audio/mp4")) {
+        mimeType = "audio/mp4"
+        fileExtension = "mp4"
+      } else if (MediaRecorder.isTypeSupported("audio/ogg;codecs=opus")) {
+        mimeType = "audio/ogg;codecs=opus"
+        fileExtension = "ogg"
+      }
+      
+      // Memorizza i formati per uso successivo
+      mimeTypeRef.current = mimeType
+      fileExtensionRef.current = fileExtension
+      
+      console.log("Formato audio utilizzato:", mimeType)
+      
+      const mediaRecorder = new MediaRecorder(stream, { mimeType })
 
       mediaRecorderRef.current = mediaRecorder
       audioChunksRef.current = []
@@ -81,8 +105,12 @@ export function useAudioRecorder() {
     return new Promise((resolve) => {
       if (mediaRecorderRef.current) {
         mediaRecorderRef.current.onstop = () => {
-          const audioBlob = new Blob(audioChunksRef.current, { type: "audio/wav" })
-          const audioFile = new File([audioBlob], `recording-${Date.now()}.wav`, { type: "audio/wav" })
+          const audioBlob = new Blob(audioChunksRef.current, { type: mimeTypeRef.current })
+          const audioFile = new File([audioBlob], `recording-${Date.now()}.${fileExtensionRef.current}`, { 
+            type: mimeTypeRef.current 
+          })
+
+          console.log("File audio creato:", audioFile.name, "Tipo:", audioFile.type, "Dimensione:", audioFile.size)
 
           // Ferma tutti i track
           if (mediaRecorderRef.current?.stream) {

@@ -39,14 +39,3 @@ export async function transcribeAudioFile(audioFile: File, model: 'whisper' | 'w
     throw new Error(errorMessage)
   }
 }
-
-// Esempio di utilizzo:
-/*
-try {
-  const audioFile = new File([blob], 'audio.wav', { type: 'audio/wav' })
-  const text = await transcribeAudioFile(audioFile, 'whisper')
-  console.log('Trascrizione:', text)
-} catch (error) {
-  console.error('Errore:', error.message)
-}
-*/
