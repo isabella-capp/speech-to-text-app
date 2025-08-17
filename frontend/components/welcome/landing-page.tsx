@@ -6,25 +6,16 @@ import {
   AudioWaveformIcon as Waveform,
 } from "lucide-react"
 import { useRouter } from "next/navigation"
-import { useState } from "react"
-import WelcomeScreen from "./welcome-screen"
-import TranscribeLayout from "@/app/transcribe/layout"
 
 export function LandingPage() {
-  const [guestMode, setGuestMode] = useState(false)
-
-  if (guestMode) {
-    return (
-      <TranscribeLayout guestMode={true}>
-        <WelcomeScreen guestMode={true} />
-      </TranscribeLayout>
-    );
-  }
-  
   const router = useRouter()
 
   const handleLoginClick = () => {
     router.push("/auth/login")
+  }
+
+  const handleGuestClick = () => {
+    router.push("/transcribe")
   }
 
   return (
@@ -71,7 +62,7 @@ export function LandingPage() {
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Button
-              onClick={() => setGuestMode(true)}
+              onClick={handleGuestClick}
               size="lg"
               className="bg-black hover:bg-gray-800 text-white px-8 py-3 rounded-full text-base font-medium shadow-lg hover:shadow-xl transition-all duration-200"
             >

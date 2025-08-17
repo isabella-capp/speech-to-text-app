@@ -12,13 +12,15 @@ import { ModelSelector } from "@/components/layout/model-selector"
 import { GuestBanner } from "@/components/guest-banner"
 import { ModelProvider, useModel } from "@/contexts/model-context"
 import type { ModelType } from "@/types/transcription"
+import { useSession } from "next-auth/react"
 
 interface TranscribeLayoutProps {
   children: React.ReactNode
-  guestMode?: boolean
 }
 
-function TranscribeLayoutContent({ children, guestMode = false }: TranscribeLayoutProps) {
+function TranscribeLayoutContent({ children }: TranscribeLayoutProps) {
+  const { data: session } = useSession()
+  const isGuest = !session
   const router = useRouter()
   const pathname = usePathname()
   
@@ -26,7 +28,9 @@ function TranscribeLayoutContent({ children, guestMode = false }: TranscribeLayo
   const [showModelSelector, setShowModelSelector] = useState(false)
   const [isTranscribing, setIsTranscribing] = useState(false)
 
-  const { transcriptionChats: chats, deleteChat, clearAllChats } = useTranscriptionChats(guestMode)
+  console.log("TranscribeLayoutContent - modalità guest:", isGuest)
+
+  const { transcriptionChats: chats, deleteChat, clearAllChats } = useTranscriptionChats(isGuest)
   
   const handleNewChat = () => {
     router.push("/transcribe")
@@ -37,7 +41,7 @@ function TranscribeLayoutContent({ children, guestMode = false }: TranscribeLayo
   return (
     <SidebarProvider>
       <div className="flex h-screen w-full">
-        {!guestMode && (
+        {!isGuest && (
           <AppSidebar
             sessions={chats}
             onDeleteSession={deleteChat}
@@ -48,8 +52,8 @@ function TranscribeLayoutContent({ children, guestMode = false }: TranscribeLayo
 
         <div className="flex-1 flex flex-col h-screen">
           {/* Guest Banner */}
-          <GuestBanner isGuest={guestMode} />
-          
+          <GuestBanner isGuest={isGuest} />
+
           {/* Header */}
           <header className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-10">
             <div className="flex items-center justify-between p-4">
@@ -71,7 +75,7 @@ function TranscribeLayoutContent({ children, guestMode = false }: TranscribeLayo
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                {guestMode && (
+                {isGuest && (
                   <Button
                     onClick={() => router.push("/auth/login")}
                     variant="outline"
@@ -107,10 +111,10 @@ function TranscribeLayoutContent({ children, guestMode = false }: TranscribeLayo
   )
 }
 
-export default function TranscribeLayout({ children, guestMode = false }: TranscribeLayoutProps) {
+export default function TranscribeLayout({ children }: TranscribeLayoutProps) {
   return (
     <ModelProvider>
-      <TranscribeLayoutContent guestMode={guestMode}>
+      <TranscribeLayoutContent>
         {children}
       </TranscribeLayoutContent>
     </ModelProvider>

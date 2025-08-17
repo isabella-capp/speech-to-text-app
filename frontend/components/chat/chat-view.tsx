@@ -12,6 +12,7 @@ import type { TranscriptionChat } from "@/types/transcription"
 import { TranscriptionMessage } from "./transcription-message"
 import { useAudioRecorder } from "@/hooks/use-audio-recorder"
 import { useToast } from "@/hooks/use-toast"
+import { useSession } from "next-auth/react"
 
 interface ChatViewProps {
   session: TranscriptionChat
@@ -19,10 +20,9 @@ interface ChatViewProps {
   onStartRecording: () => void
   onTranscribe: (file: File) => void
   isTranscribing: boolean
-  guestMode: boolean
 }
 
-export function ChatView({ session, onTranscribe, isTranscribing, guestMode }: ChatViewProps) {
+export function ChatView({ session, onTranscribe, isTranscribing }: ChatViewProps) {
   const [audioUrl, setAudioUrl] = useState<string | null>(null)
   const [audioElement, setAudioElement] = useState<HTMLAudioElement | null>(null)
   const [isPlaying, setIsPlaying] = useState(false)

@@ -9,6 +9,6 @@ export default function GuestChatPage({
 }) {
 
   return (
-    <ChatPage guestMode={true} />
+    <ChatPage />
   )
 }

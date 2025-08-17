@@ -1,13 +1,5 @@
 import WelcomeScreen from "@/components/welcome/welcome-screen"
-import { auth } from "@/lib/auth"
-import { redirect } from "next/navigation"
 
-export default async function TranscribePage() {
-  const session = await auth()
-
-  if (!session) {
-    redirect("/")
-  }
-
+export default function TranscribePage() {
   return <WelcomeScreen />
 }

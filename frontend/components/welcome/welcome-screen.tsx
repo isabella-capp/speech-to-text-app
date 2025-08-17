@@ -7,12 +7,14 @@ import { AudioRecorder } from "../audio/audio-recorder"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
 import { useModel } from "@/contexts/model-context"
+import { useSession } from "next-auth/react"
 
-export default function WelcomeScreen({guestMode = false}: { guestMode?: boolean }) {
+export default function WelcomeScreen() {
+  const { data: session } = useSession()
+  const isGuest = !session
   const { toast } = useToast()
   const router = useRouter()
   const { selectedModel } = useModel() // Ora puoi accedere al modello selezionato
-  const [isGuest] = useState(guestMode)
   const [audioFile, setAudioFile] = useState<File | null>(null)
   const [dragActive, setDragActive] = useState(false)
   const [isTranscribing, setIsTranscribing] = useState(false)
@@ -52,14 +54,8 @@ export default function WelcomeScreen({guestMode = false}: { guestMode?: boolean
       console.log("ID chat:", data.chat?.id)
       
       if (data.chat?.id) {
-        let targetPath: string
-        
-        if (isGuest || data.chat.isGuest) {
-          targetPath = `/transcribe/chat/guest-${data.chat.id}`
-        } else {
-          targetPath = `/transcribe/chat/${data.chat.id}`
-        }
-        
+        let targetPath = `/transcribe/chat/guest-${data.chat.id}`
+       
         console.log("Navigando verso:", targetPath)
         router.push(targetPath)
       } else {
