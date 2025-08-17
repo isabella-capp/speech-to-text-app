@@ -1,4 +1,4 @@
-import { LandingPage } from "@/components/welcome/landing-page"
+import { LandingPage } from "@/components/landing/landing-page"
 import { auth } from "@/lib/auth"
 import { redirect } from "next/navigation"
 
