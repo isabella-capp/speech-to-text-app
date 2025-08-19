@@ -1,7 +1,6 @@
 // hooks/use-transcription-chats/api.ts
 import React from "react"
 import type { TranscriptionChat, ChatApiResponse, NewMessageData } from "./types"
-import { redirect } from "next/dist/server/api-utils"
 
 export const fetchChats = async (showToast: (title: string, description: string, variant?: "destructive") => void) => {
   try {

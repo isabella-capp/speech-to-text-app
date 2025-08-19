@@ -4,126 +4,78 @@ import { useState } from "react"
 import { AudioWaveformIcon as Waveform } from "lucide-react"
 import { AudioUploader } from "../audio/audio-upload"
 import { AudioRecorder } from "../audio/audio-recorder"
-import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
 import { useModel } from "@/contexts/model-context"
 import { useSession } from "next-auth/react"
+import { useTranscription } from "@/hooks/use-trascription"
+import { TranscriptionChat } from "@/hooks/use-transcription-chat/types"
+import { useTranscriptionChats } from "@/hooks/use-transcription-chat"
 
 export default function WelcomeScreen() {
+  const { toast } = useToast()
+  const { selectedModel } = useModel()
   const { data: session } = useSession()
   const isGuest = !session
-  const { toast } = useToast()
-  const router = useRouter()
-  const { selectedModel } = useModel() // Ora puoi accedere al modello selezionato
+  const { addChat } = useTranscriptionChats(isGuest)
+  
   const [audioFile, setAudioFile] = useState<File | null>(null)
   const [dragActive, setDragActive] = useState(false)
-  const [isTranscribing, setIsTranscribing] = useState(false)
-
-  console.log("WelcomeScreen - modalità guest:", isGuest)
-  console.log("WelcomeScreen - modello selezionato:", selectedModel)
+  const [isLoading, setIsLoading] = useState(false)
+  const {loading ,  transcribe} = useTranscription()
 
   const handleRecordingComplete = (file: File) => {
     setAudioFile(file)
   }
 
   const onTranscribe = async (file: File) => {
-    setIsTranscribing(true)
+    setIsLoading(loading)
+    console.log(file)
     try {
-      console.log("Iniziando trascrizione per file:", file.name)
-      console.log("Usando modello:", selectedModel)
-      console.log("Modalità guest:", isGuest)
-      
-      const formData = new FormData()
-      formData.append("audio", file)
-      formData.append("model", selectedModel) // Aggiungi il modello alla richiesta
+      const res = await transcribe(file, selectedModel as "whisper" | "wav2vec2")
+      if (!res) return
 
-      const response = await fetch("/api/transcribe", {
-        method: "POST",
-        body: formData,
-      })
-
-      console.log("Risposta API ricevuta:", response.status)
-
-      if (!response.ok) {
-        const errorData = await response.text()
-        console.error("Errore API:", errorData)
-        throw new Error("Errore nella trascrizione")
-      }
-
-      const data = await response.json()
-      console.log("Dati ricevuti:", data)
-      
       if (isGuest) {
-        // Per gli utenti guest, crea un ID locale e gestisci tutto lato client
-        const guestChatId = `guest_${Date.now()}`
-        
-        // Crea la chat guest nel localStorage
-        const newChat = {
-          id: guestChatId,
-          title: "Nuova Chat",
-          timestamp: new Date(),
-          messages: [
-            {
-              id: `guest_msg_${Date.now()}_user`,
-              content: file.name,
-              type: "user" as const,
-              audioFile: {
-                name: file.name,
-                size: file.size,
-              },
-              timestamp: new Date(),
-              model: undefined,
-            },
-            {
-              id: `guest_msg_${Date.now()}_transcription`,
-              content: data.transcript || data.transcription,
-              type: "transcription" as const,
-              timestamp: new Date(),
-              model: data.model || selectedModel,
-            }
-          ]
-        }
-
-        // Salva nel localStorage
-        const existingChats = localStorage.getItem("guest_transcription_chats")
-        let guestChatsData: { chats: any[], timestamp: number } = { chats: [], timestamp: Date.now() }
-
-        if (existingChats) {
-          try {
-            guestChatsData = JSON.parse(existingChats)
-          } catch (error) {
-            console.error("Errore nel parsing delle chat guest:", error)
-          }
-        }
-
-        guestChatsData.chats.unshift(newChat)
-        guestChatsData.timestamp = Date.now()
-        localStorage.setItem("guest_transcription_chats", JSON.stringify(guestChatsData))
-
-        console.log("Chat guest creata:", newChat)
-        console.log("Navigando verso:", `/transcribe/chat/${guestChatId}`)
-        window.location.href = `/transcribe/chat/${guestChatId}`
+      const newChat: TranscriptionChat = {
+        id: `chat_${Date.now()}`,
+        title: file.name || "Nuova Trascrizione",
+        timestamp: new Date(),
+        model: selectedModel,
+        audioFile: { name: file.name, size: file.size },
+        messages: [
+          {
+            id: `msg_${Date.now()}_user`,
+            type: "user",
+            content: `File audio: ${file.name}`,
+            timestamp: new Date(),
+            audioFile: { name: file.name, size: file.size },
+          },
+          {
+            id: `msg_${Date.now()}_transcription`,
+            type: "transcription",
+            content: res.transcription,
+            timestamp: new Date(),
+            model: res.model || selectedModel,
+          },
+        ],
+      }
+        const chatId = await addChat(newChat)
+        window.location.href = `/transcribe/chat/${chatId}`
       } else {
-        // Per utenti autenticati, usa l'ID dal database
-        console.log("ID chat:", data.chat?.id)
-        
-        if (data.chat?.id) {
-          const targetPath = `/transcribe/chat/${data.chat.id}`
-          console.log("Navigando verso:", targetPath)
+        if (res.chat?.id) {
+          const targetPath = `/transcribe/chat/${res.chat.id}`
           window.location.href = targetPath
-        } else {
-          throw new Error("ID chat mancante nella risposta")
         }
       }
-    } catch (error: any) {
-      console.error("Errore completo:", error)
+    }
+    catch (error) {
+      console.error("Errore durante la trascrizione:", error)
       toast({
         title: "Errore",
-        description: error.message || "Impossibile trascrivere il file",
+        description: error instanceof Error ? error.message : "Errore durante la trascrizione",
         variant: "destructive",
       })
     } finally {
-      setIsTranscribing(false)
+      setIsLoading(false)
     }
   }
 
@@ -144,7 +96,7 @@ export default function WelcomeScreen() {
         onTranscribe={(file) => onTranscribe(file)}
         dragActive={dragActive}
         onDragActiveChange={setDragActive}
-        isTranscribing={isTranscribing}
+        isTranscribing={isLoading}
       />
 
       <AudioRecorder onRecordingComplete={handleRecordingComplete} />

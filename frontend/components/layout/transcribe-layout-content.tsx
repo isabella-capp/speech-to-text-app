@@ -6,7 +6,7 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { useTranscriptionChats } from "@/hooks/use-transcription-chat"
 import { AppSidebar } from "@/components/sidebar/app-sidebar"
-import { GuestBanner } from "@/components/guest-banner"
+import { GuestBanner } from "@/components/layout/headers/guest-banner"
 import TranscribeHeader from "./headers/transcribe-header"
 
 interface TranscribeLayoutProps {
