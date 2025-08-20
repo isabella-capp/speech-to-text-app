@@ -6,252 +6,145 @@ import { ChatView } from "@/components/chat/chat-view"
 import type { TranscriptionChat } from "@/types/transcription"
 import { useToast } from "@/hooks/use-toast"
 import { useSession } from "next-auth/react"
+import { useTranscriptionChats } from "@/hooks/use-transcription-chat"
+import { useTranscription } from "@/hooks/use-trascription"
+import { useModel } from "@/contexts/model-context"
+import { is } from "zod/v4/locales"
 
 export default function ChatPage() {
   const { data: session } = useSession()
+  const { selectedModel } = useModel()
   const isGuest = !session
   const params = useParams()
   const chatId = params.id as string
   const { toast } = useToast()
-
-  const [transcriptionChat, setTranscriptionChat] = useState<TranscriptionChat | null>(null)
+  const { getChat, addMessageToChat, refreshChat } = useTranscriptionChats(isGuest)
+  const { loading, transcribe } = useTranscription()
+  const chat = getChat(chatId)
   const [isTranscribing, setIsTranscribing] = useState(false)
 
-  useEffect(() => {
-    if (isGuest) {
-      // Per gli utenti guest, prova a caricare dal localStorage
-      const guestChats = localStorage.getItem("guest_transcription_chats")
-      if (guestChats) {
-        try {
-          const data = JSON.parse(guestChats)
-          const chat = data.chats?.find((c: TranscriptionChat) => c.id === chatId)
-          if (chat) {
-            setTranscriptionChat({
-              ...chat,
-              timestamp: new Date(chat.timestamp),
-              messages: chat.messages.map((msg: any) => ({
-                ...msg,
-                timestamp: new Date(msg.timestamp)
-              }))
-            })
-          } else {
-            // Se la chat non esiste nel localStorage, crea una chat vuota
-            setTranscriptionChat({
-              id: chatId,
-              title: "Nuova Chat Guest",
-              timestamp: new Date(),
-              messages: [],
-            })
-          }
-        } catch (error) {
-          console.error("Errore nel parsing delle chat guest:", error)
-          // In caso di errore, crea una chat vuota
-          setTranscriptionChat({
-            id: chatId,
-            title: "Nuova Chat Guest",
-            timestamp: new Date(),
-            messages: [],
-          })
-        }
-      } else {
-        // Se non ci sono chat nel localStorage, crea una chat vuota
-        setTranscriptionChat({
-          id: chatId,
-          title: "Nuova Chat Guest",
-          timestamp: new Date(),
-          messages: [],
-        })
-      }
-      return // Importante: esce qui per gli utenti guest
+  const handleTranscribeMessage = async (index: number) => {
+    if (!chat || chat.messages.length === 0 || index < 0) return
+    
+    const message = chat.messages[index]
+    console.log(message)
+    if (!message.audioPath) {
+      toast({
+        title: "Errore",
+        description: "Percorso audio non trovato",
+        variant: "destructive"
+      })
+      return
     }
 
-    // Solo per utenti autenticati
-    const fetchChat = async () => {
-      try {
-        const res = await fetch(`/api/chats/${chatId}`)
-        if (!res.ok) {
-          throw new Error("Errore nel caricamento della chat")
-        }
-        const data = await res.json()
-        const chatData: TranscriptionChat = {
-          id: data.id,
-          title: data.title,
-          timestamp: new Date(data.createdAt),
-          messages: data.messages.map((msg: any) => ({
-            id: msg.id,
-            content: msg.content,
-            type: msg.type.toLowerCase() as "user" | "assistant" | "transcription",
-            audioFile: msg.audioName ? {
-              name: msg.audioName,
-              size: msg.audioSize || 0,
-            } : undefined,
-            timestamp: new Date(msg.createdAt),
-            model: msg.modelName,
-          })),
-        }
-        setTranscriptionChat(chatData)
-      } catch (err) {
-        console.error(err)
-        toast({
-          title: "Errore",
-          description: "Impossibile caricare la chat",
-          variant: "destructive",
-        })
-      }
-    }
-
-    if (chatId) {
-      fetchChat()
-    }
-  }, [chatId, isGuest])
-
-  const handleTranscribe = async (file: File) => {
-    setIsTranscribing(true)
     try {
-      if (isGuest) {
-        // Per gli utenti guest, gestisci la trascrizione localmente
-        const formData = new FormData()
-        formData.append("file", file)
+      setIsTranscribing(true) // Inizia lo stato di trascrizione
+      
+      // Recupera il file audio dal percorso
+      const response = await fetch(message.audioPath)
+      if (!response.ok) {
+        throw new Error("Impossibile recuperare il file audio")
+      }
+      
+      const buffer = await response.arrayBuffer()
+      const fileName = message.audioName || `audio_${Date.now()}.wav`
+      const type = response.headers.get('content-type') || 'audio/wav'
+      
+      const fileInfo = {
+        buffer: Array.from(new Uint8Array(buffer)),
+        fileName,
+        type,
+        model: selectedModel
+      }
 
-        const res = await fetch("/api/transcribe", {
-          method: "POST",
-          body: formData,
-        })
+      console.log("Sending fileInfo:", {
+        bufferLength: fileInfo.buffer.length,
+        fileName: fileInfo.fileName,
+        type: fileInfo.type,
+        model: fileInfo.model
+      })
 
-        if (!res.ok) throw new Error("Errore nella trascrizione")
+      const res = await fetch(`/api/transcribe/${chatId}`, {
+        method: "POST",
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ fileInfo })
+      })
 
-        const data = await res.json()
-        
-        // Crea i nuovi messaggi per la trascrizione
-        const newMessages = [
-          {
-            id: `guest_msg_${Date.now()}_user`,
-            content: file.name,
-            type: "user" as const,
-            audioFile: {
-              name: file.name,
-              size: file.size,
-            },
-            timestamp: new Date(),
-            model: undefined,
-          },
-          {
-            id: `guest_msg_${Date.now()}_transcription`,
-            content: data.transcript || data.transcription,
-            type: "transcription" as const,
-            timestamp: new Date(),
-            model: data.model,
-          }
-        ]
+      if (!res.ok) {
+        const error = await res.text()
+        throw new Error(error)
+      }
 
-        // Aggiorna lo stato locale
-        setTranscriptionChat((prev) => {
-          const updatedChat = prev
-            ? { ...prev, messages: [...prev.messages, ...newMessages] }
-            : {
-                id: chatId,
-                title: "Nuova Chat",
-                timestamp: new Date(),
-                messages: newMessages,
-              }
+      const result = await res.json()
+      
+      if (result.success) {
+        // Aggiorna la chat con il messaggio di trascrizione
 
-          // Salva nel localStorage
-          const existingChats = localStorage.getItem("guest_transcription_chats")
-          let guestChatsData: { chats: TranscriptionChat[], timestamp: number } = { chats: [], timestamp: Date.now() }
-          
-          if (existingChats) {
-            try {
-              guestChatsData = JSON.parse(existingChats)
-            } catch (error) {
-              console.error("Errore nel parsing delle chat guest:", error)
-            }
-          }
-
-          // Trova e aggiorna la chat esistente o aggiungila
-          const chatIndex = guestChatsData.chats.findIndex((c: TranscriptionChat) => c.id === chatId)
-          if (chatIndex >= 0) {
-            guestChatsData.chats[chatIndex] = updatedChat
-          } else {
-            guestChatsData.chats.unshift(updatedChat)
-          }
-
-          guestChatsData.timestamp = Date.now()
-          localStorage.setItem("guest_transcription_chats", JSON.stringify(guestChatsData))
-
-          return updatedChat
-        })
+        if (isGuest) {
+          addMessageToChat(chatId, result.message)
+        } else {
+          // per utenti loggati faccio il refresh dal backend
+          await refreshChat(chatId)
+        }
 
         toast({
           title: "Successo",
-          description: "Trascrizione completata (salvata localmente)",
+          description: "Trascrizione completata"
         })
-        return
+      } else {
+        throw new Error(result.error || "Errore nella trascrizione")
       }
-
-      // Logica originale per gli utenti autenticati
-      const formData = new FormData()
-      formData.append("file", file)
-
-      const res = await fetch(`/api/chats/${chatId}/transcribe`, {
-        method: "POST",
-        body: formData,
-      })
-
-      if (!res.ok) throw new Error("Errore nella trascrizione")
-
-      const data = await res.json()
-      const newMessages = data.messages.map((msg: any) => ({
-        id: msg.id,
-        content: msg.content,
-        type: msg.type.toLowerCase() as "user" | "assistant" | "transcription",
-        audioFile: msg.audioName ? {
-          name: msg.audioName,
-          size: msg.audioSize || 0,
-        } : undefined,
-        timestamp: new Date(msg.createdAt),
-        model: msg.modelName,
-      }))
-
-      setTranscriptionChat((prev) =>
-        prev
-          ? { ...prev, messages: [...prev.messages, ...newMessages] }
-          : {
-              id: chatId,
-              title: "Nuova Chat",
-              timestamp: new Date(),
-              messages: newMessages,
-            }
-      )
-
-      toast({
-        title: "Successo",
-        description: "Trascrizione completata",
-      })
-    } catch (err) {
-      console.error(err)
+    } catch (error: any) {
+      console.error("Errore trascrizione:", error)
       toast({
         title: "Errore",
-        description: "Impossibile completare la trascrizione",
-        variant: "destructive",
+        description: error.message || "Errore durante la trascrizione",
+        variant: "destructive"
       })
     } finally {
+      setIsTranscribing(false) // Fine dello stato di trascrizione
+    }
+  }
+
+  useEffect(() => {
+    if (chat?.messages.length === 1 && !isTranscribing) {
+      handleTranscribeMessage(0)
+    }
+  }, [chat?.messages.length, chatId])
+
+  const handleTranscribe = async (file: File) => {
+    console.log("Handling transcribe for file:", file)
+    setIsTranscribing(true)
+    try {
+      const res = await transcribe(file, selectedModel as "whisper" | "wav2vec2")
+      if(!res) {
+        return
+      }
+      console.log("Transcription result:", res)
+      const index = chat?.messages ? chat.messages.length : -1
+      console.log("Transcribing message at index:", index)
+      console.log("Chat messages:", chat?.messages)
+      if (index >= 0) {
+        setIsTranscribing(false) // Reset prima di chiamare handleTranscribeMessage che lo gestirà
+        await handleTranscribeMessage(index)
+      }
+    } catch (error) {
+      console.error("Errore in handleTranscribe:", error)
       setIsTranscribing(false)
     }
   }
 
-  const handleFileSelect = (file: File) => {
-    handleTranscribe(file)
+  const handleFileSelect = async (file: File) => {
+    await handleTranscribe(file)
   }
 
   const handleStartRecording = () => {
-    // Implementazione per iniziare la registrazione
     console.log("Start recording from chat view")
   }
 
-  console.log(transcriptionChat)
-  console.log("Trascriptions:", transcriptionChat?.messages)
-
-  if (!transcriptionChat) {
+  if (!chat) {
     return (
       <div className="flex items-center justify-center h-full">
         <div className="text-center">
@@ -264,7 +157,7 @@ export default function ChatPage() {
 
   return (
     <ChatView
-      session={transcriptionChat}
+      session={chat}
       onFileSelect={handleFileSelect}
       onStartRecording={handleStartRecording}
       onTranscribe={handleTranscribe}

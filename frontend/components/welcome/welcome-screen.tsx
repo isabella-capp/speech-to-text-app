@@ -17,11 +17,11 @@ export default function WelcomeScreen() {
   const { data: session } = useSession()
   const isGuest = !session
   const { addChat } = useTranscriptionChats(isGuest)
-  
+
   const [audioFile, setAudioFile] = useState<File | null>(null)
   const [dragActive, setDragActive] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
-  const {loading ,  transcribe} = useTranscription()
+  const { loading, transcribe } = useTranscription()
 
   const handleRecordingComplete = (file: File) => {
     setAudioFile(file)
@@ -29,39 +29,21 @@ export default function WelcomeScreen() {
 
   const onTranscribe = async (file: File) => {
     setIsLoading(loading)
-    console.log(file)
+
     try {
       const res = await transcribe(file, selectedModel as "whisper" | "wav2vec2")
       if (!res) return
 
       if (isGuest) {
-      const newChat: TranscriptionChat = {
-        id: `chat_${Date.now()}`,
-        title: file.name || "Nuova Trascrizione",
-        timestamp: new Date(),
-        model: selectedModel,
-        audioFile: { name: file.name, size: file.size },
-        messages: [
-          {
-            id: `msg_${Date.now()}_user`,
-            type: "user",
-            content: `File audio: ${file.name}`,
-            timestamp: new Date(),
-            audioFile: { name: file.name, size: file.size },
-          },
-          {
-            id: `msg_${Date.now()}_transcription`,
-            type: "transcription",
-            content: res.transcription,
-            timestamp: new Date(),
-            model: res.model || selectedModel,
-          },
-        ],
-      }
-        const chatId = await addChat(newChat)
+        const chatData: TranscriptionChat = {
+          ...res.chat,
+          timestamp: new Date(), 
+        }
+
+        const chatId = await addChat(chatData)
         window.location.href = `/transcribe/chat/${chatId}`
       } else {
-        if (res.chat?.id) {
+        if (res.chat.id) {
           const targetPath = `/transcribe/chat/${res.chat.id}`
           window.location.href = targetPath
         }

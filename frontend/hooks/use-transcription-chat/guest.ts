@@ -1,6 +1,6 @@
 // hooks/use-transcription-chats/guest.ts
 import React from "react"
-import type { TranscriptionChat, GuestStorageData, NewMessageData } from "./types"
+import type { TranscriptionChat, GuestStorageData, Message } from "./types"
 
 const GUEST_STORAGE_KEY = "guest_transcription_chats"
 const GUEST_STORAGE_DURATION = 10 * 60 * 1000
@@ -27,6 +27,10 @@ export const loadGuestChats = (): TranscriptionChat[] => {
   }
 }
 
+export const getChat = (chatId: string, chats: TranscriptionChat[]): TranscriptionChat | undefined => {
+  return chats.find(chat => chat.id === chatId);
+}
+
 export const saveGuestChats = (chats: TranscriptionChat[]) => {
   try {
     localStorage.setItem(GUEST_STORAGE_KEY, JSON.stringify({ chats, timestamp: Date.now() }))
@@ -41,7 +45,7 @@ export const addChat = (
   setChats: React.Dispatch<React.SetStateAction<TranscriptionChat[]>>,
   showToast: (title: string, description: string) => void
 ) => {
-  const newChat: TranscriptionChat = { ...chatData, id: `guest_${Date.now()}`, timestamp: new Date() }
+  const newChat: TranscriptionChat = { ...chatData }
   const updated = [newChat, ...chats]
   setChats(updated)
   saveGuestChats(updated)
@@ -51,19 +55,12 @@ export const addChat = (
 
 export const addMessage = (
   chatId: string,
-  messageData: NewMessageData,
+  messageData: Message,
   chats: TranscriptionChat[],
   setChats: React.Dispatch<React.SetStateAction<TranscriptionChat[]>>,
   showToast: (title: string, description: string) => void
 ) => {
-  const newMessage = {
-    id: `guest_msg_${Date.now()}`,
-    ...messageData,
-    timestamp: new Date(),
-    audioFile: messageData.audioFile
-      ? { name: messageData.audioFile.name, size: messageData.audioFile.size }
-      : undefined,
-  }
+  const newMessage = { ...messageData }
 
   const updated = chats.map(chat =>
     chat.id === chatId

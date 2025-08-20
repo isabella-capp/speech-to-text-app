@@ -1,6 +1,6 @@
 // hooks/use-transcription-chats/api.ts
 import React from "react"
-import type { TranscriptionChat, ChatApiResponse, NewMessageData } from "./types"
+import type { TranscriptionChat, ChatApiResponse, Message } from "./types"
 
 export const fetchChats = async (showToast: (title: string, description: string, variant?: "destructive") => void) => {
   try {
@@ -11,31 +11,24 @@ export const fetchChats = async (showToast: (title: string, description: string,
     }    
     
     const data: ChatApiResponse[] = await response.json()
-
-    return data.map(chat => ({
+    console.log("Fetched chats:", data)
+    const chats: TranscriptionChat[] = data.map(chat => ({
       id: chat.id,
       title: chat.title,
-      timestamp: new Date(chat.updatedAt),
-      audioFile: chat.messages[0]?.audioPath && chat.messages[0]?.audioName
-        ? { 
-            name: chat.messages[0].audioName, 
-            size: chat.messages[0].audioSize || 0, 
-            url: chat.messages[0].audioPath 
-          }
-        : undefined,
-      model: chat.messages[0]?.modelName,
+      timestamp: new Date(chat.createdAt),
       messages: chat.messages.map(msg => ({
         id: msg.id,
         type: msg.type,
         content: msg.content,
+        modelName: msg.modelName,
+        audioPath: msg.audioPath,
+        audioName: msg.audioName,
+        audioSize: msg.audioSize,
         timestamp: new Date(msg.createdAt),
-        model: msg.modelName,
-        audioFile: msg.audioPath && msg.audioName ? { 
-          name: msg.audioName, 
-          size: msg.audioSize || 0 
-        } : undefined,
       })),
     }))
+
+    return chats
   } catch (e) {
     console.error(e)
     showToast("Errore", "Impossibile caricare le chat", "destructive")
@@ -43,6 +36,36 @@ export const fetchChats = async (showToast: (title: string, description: string,
   }
 }
 
+export const getChat = (chatId: string, chats: TranscriptionChat[]): TranscriptionChat | undefined => {
+  const chat = chats.find(chat => chat.id === chatId);
+  return chat;
+}
+
+export const refreshChat = async (
+  chatId: string,
+  setChats: React.Dispatch<React.SetStateAction<TranscriptionChat[]>>,
+  showToast: (title: string, description: string, variant?: "destructive") => void
+): Promise<void> => {
+  try {
+    const response = await fetch(`/api/chats/${chatId}`);
+    
+    if (!response.ok) {
+      throw new Error("Errore caricamento chat");
+    }
+    
+    const updatedChat = await response.json();
+    
+    // Aggiorna lo stato locale con la chat aggiornata
+    setChats((prev: TranscriptionChat[]) =>
+      prev.map((chat: TranscriptionChat) =>
+        chat.id === chatId ? updatedChat : chat
+      )
+    );
+  } catch (error) {
+    console.error(error);
+    showToast("Errore", "Impossibile aggiornare la chat", "destructive");
+  }
+}
 
 export const addChat = async (
   chatData: TranscriptionChat,
@@ -73,7 +96,7 @@ export const addChat = async (
 
 export const addMessage = async (
   chatId: string,
-  messageData: NewMessageData,
+  messageData: Message,
   setChats: React.Dispatch<React.SetStateAction<TranscriptionChat[]>>,
   showToast: (title: string, description: string, variant?: "destructive") => void
 ) => {

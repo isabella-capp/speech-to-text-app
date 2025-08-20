@@ -35,34 +35,34 @@ export function TranscriptionMessage({ message, sessionTitle }: TranscriptionMes
   }
 
   return (
-    <div className={`flex gap-4 ${message.type === "user" ? "justify-end" : "justify-start"}`}>
-      {message.type === "assistant" && (
+    <div className={`flex gap-4 ${message.type === "USER" ? "justify-end" : "justify-start"}`}>
+      {message.type === "ASSISTANT" && (
         <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
           <Waveform className="w-4 h-4 text-white" />
         </div>
       )}
       <div
         className={`max-w-[80%] rounded-2xl p-4 ${
-          message.type === "user" ? "bg-gradient-to-br from-blue-500 to-purple-600 text-white" : "bg-gray-100 text-gray-900 border border-gray-200"
+          message.type === "USER" ? "bg-gradient-to-br from-blue-500 to-purple-600 text-white" : "bg-gray-100 text-gray-900 border border-gray-200"
         }`}
       >
-        {message.audioFile && (
+        {message.audioPath && (
           <div className="mb-3 p-3 bg-white/10 rounded-lg">
             <div className="flex items-center gap-2 justify-between ">
               <div className="flex items-center gap-2">
                 <FileAudio className="w-4 h-4" />
-                <span className="text-sm font-medium">{message.audioFile.name}</span>
+                <span className="text-sm font-medium">{message.audioName}</span>
               </div>
               <div className="flex items-center gap-2">
                 <Badge variant="default" className="text-xs bg-white/40">
-                  {(message.audioFile.size / 1024 / 1024).toFixed(2)} MB
+                  {message.audioSize ? (message.audioSize / 1024 / 1024).toFixed(2) + ' MB' : 'Dimensione sconosciuta'}
                 </Badge>
               </div>
             </div>
           </div>
         )}
         <p className="whitespace-pre-wrap">{message.content}</p>
-        {message.type === "assistant" && (
+        {message.type === "ASSISTANT" && (
           <div className="flex gap-2 mt-3 pt-3 border-t border-gray-200">
             <Button onClick={() => copyTranscription(message.content)} variant="ghost" size="sm" className="gap-2 h-8 hover:bg-gray-200/50 rounded-lg">
               <Copy className="w-3 h-3" />
@@ -80,7 +80,7 @@ export function TranscriptionMessage({ message, sessionTitle }: TranscriptionMes
           </div>
         )}
       </div>
-      {message.type === "user" && (
+      {message.type === "USER" && (
         <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
           <User className="w-4 h-4 text-white" />
         </div>

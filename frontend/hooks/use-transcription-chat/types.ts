@@ -1,31 +1,25 @@
-export interface AudioFile {
-  name: string
-  size: number
-  url?: string
-}
-
 export interface Message {
   id: string
-  type: "user" | "assistant" | "transcription"
+  type: "USER" | "ASSISTANT" | "TRANSCRIPTION"
+  audioName?: string
+  audioSize?: number
+  audioPath?: string
   content: string
   timestamp: Date
-  model?: string
-  audioFile?: AudioFile
+  modelName?: string
 }
 
 export interface TranscriptionChat {
   id: string
   title: string
   timestamp: Date
-  model?: string
-  audioFile?: AudioFile
   messages: Message[]
 }
 
 // Tipi per API
 export interface ChatApiMessage {
   id: string
-  type: "user" | "assistant" | "transcription"
+  type: "USER" | "ASSISTANT" | "TRANSCRIPTION"
   content: string
   modelName?: string
   audioPath?: string
@@ -46,12 +40,4 @@ export interface ChatApiResponse {
 export interface GuestStorageData {
   chats: TranscriptionChat[]
   timestamp: number
-}
-
-// Nuovo messaggio
-export interface NewMessageData {
-  content: string
-  type: "user" | "assistant" | "transcription"
-  model?: string
-  audioFile?: File
 }

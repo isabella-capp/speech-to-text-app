@@ -57,8 +57,6 @@ interface AppSidebarProps {
 export function AppSidebar({ sessions, onDeleteSession, onClearAllSessions, onNewSession }: AppSidebarProps) {
   const session = useSession()
 
-  console.log("AppSidebar sessions:", sessions)
-
   const [searchQuery, setSearchQuery] = useState("")
   const [showSearchDialog, setShowSearchDialog] = useState(false)
   const [showTriggerOnHover, setShowTriggerOnHover] = useState(false)

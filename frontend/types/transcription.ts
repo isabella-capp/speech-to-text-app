@@ -1,26 +1,19 @@
+export interface TranscriptionMessage {
+  id: string
+  type: "USER" | "ASSISTANT" | "TRANSCRIPTION"
+  audioName?: string
+  audioSize?: number
+  audioPath?: string
+  content: string
+  timestamp: Date
+  modelName?: string
+}
+
 export interface TranscriptionChat {
   id: string
   title: string
   timestamp: Date
   messages: TranscriptionMessage[]
-  model?: string
-  audioFile?: {
-    name: string
-    size: number
-    url?: string
-  }
-}
-
-export interface TranscriptionMessage {
-  id: string
-  type: "user" | "assistant" | "transcription"
-  content: string
-  audioFile?: {
-    name: string
-    size: number
-  }
-  timestamp: Date
-  model?: string
 }
 
 export type ModelType = "whisper" | "wav2vec2"
