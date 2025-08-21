@@ -4,7 +4,6 @@ import db from "@/lib/db/db"
 import { auth } from "@/lib/auth"
 import { writeFile } from "fs/promises"
 import { join } from "path"
-import { timeStamp } from "console"
 
 export async function POST(req: Request) {
   const session = await auth()

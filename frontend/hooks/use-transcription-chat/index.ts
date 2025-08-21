@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import type { TranscriptionChat, Message } from "./types";
 import { useToast } from "@/hooks/use-toast";
 import * as guest from "./guest";
@@ -30,15 +30,27 @@ export function useTranscriptionChats(isGuest: boolean) {
     fetchChats();
   }, [isGuest]);
 
+  // Memoizza getChat per evitare richieste multiple
+  const getChat = useCallback(
+    async (chatId: string) => {
+      if (isGuest) {
+        // Per gli ospiti, aspetta che il loading sia completato
+        if (loading) {
+          return null;
+        }
+        return guest.getChat(chatId, transcriptionChats) ?? null;
+      } else {
+        return api.getChat(chatId);
+      }
+    },
+    [isGuest, transcriptionChats, loading]
+  );
+
   return {
     transcriptionChats,
     loading,
-    getChat: isGuest
-      ? (chatId: string) => guest.getChat(chatId, transcriptionChats)
-      : (chatId: string) => api.getChat(chatId, transcriptionChats),
-    refreshChat: isGuest
-      ? async (chatId: string) => {} // No-op per guest
-      : async (chatId: string) => api.refreshChat(chatId, setChats, showToast),
+    setChats,
+    getChat,
     addChat: isGuest
       ? (chat: TranscriptionChat) =>
           guest.addChat(chat, transcriptionChats, setChats, showToast)
@@ -46,8 +58,8 @@ export function useTranscriptionChats(isGuest: boolean) {
     addMessageToChat: isGuest
       ? (chatId: string, msg: Message) =>
           guest.addMessage(chatId, msg, transcriptionChats, setChats, showToast)
-      : (chatId: string, msg: Message) =>
-          api.addMessage(chatId, msg, setChats, showToast),
+      : (chatId: string, file: File, model: "whisper" | "wav2vec2") =>
+          api.addMessage(chatId, file, model, setChats, showToast),
     deleteChat: isGuest
       ? (chatId: string) =>
           guest.deleteChat(chatId, transcriptionChats, setChats, showToast)

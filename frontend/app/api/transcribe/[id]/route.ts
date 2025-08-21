@@ -2,8 +2,8 @@ import { NextResponse } from "next/server"
 import db from "@/lib/db/db"
 import { auth } from "@/lib/auth"
 
-export async function POST(req: Request, { params }: { params: { id: string } }) {
-    const chatId = params.id
+export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
+    const { id: chatId } = await params
     const session = await auth()
     const isGuest = !session?.user?.id
     

@@ -1,6 +1,7 @@
 import db from "@/lib/db/db"
 import { auth } from "@/lib/auth"
 import { NextResponse } from "next/server"
+import { revalidatePath, revalidateTag } from "next/cache"
 
 // GET: Recupera una chat specifica con tutti i suoi messaggi
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -65,6 +66,9 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
         id,
       },
     })
+    
+    revalidateTag(`chat-${id}`)
+    revalidateTag("chats")
 
     return NextResponse.json({ message: "Chat eliminata con successo" })
   } catch (error) {
@@ -112,6 +116,9 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
         },
       },
     })
+
+    revalidateTag(`chat-${id}`)
+    revalidateTag("chats")
 
     return NextResponse.json(updatedChat)
   } catch (error) {

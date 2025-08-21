@@ -159,7 +159,7 @@ export function AppSidebar({ sessions, onDeleteSession, onClearAllSessions, onNe
                       <div className="flex-1 min-w-0">
                         <div className="truncate font-medium">{chat.title}</div>
                         <div className="text-xs text-gray-500 truncate">
-                          {chat.timestamp.toLocaleDateString("it-IT")}
+                          {chat?.timestamp?.toLocaleDateString("it-IT")}
                         </div>
                       </div>
                     </SidebarMenuButton>
