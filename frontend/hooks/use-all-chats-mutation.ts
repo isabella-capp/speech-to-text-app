@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { clearTranscriptionSession, clearAllTranscriptionSession } from "@/lib/utils/get-transcription-session";
+import { useRouter } from "next/navigation";
 
 // Funzioni per utenti autenticati
 export async function deleteUserChat(chatId: string) {
@@ -26,12 +27,13 @@ export async function clearAllGuestChats() {
 
 export function useAllChatMutation(isGuest: boolean) {
     const queryClient = useQueryClient();
-
+    const Router = useRouter();
     const deleteChat = useMutation({
         mutationFn: (chatId: string) =>
             isGuest ? deleteGuestChat(chatId) : deleteUserChat(chatId),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["chats", isGuest ? "guest" : "user"] });
+            Router.push("/transcribe");
             toast.success("Chat eliminata con successo");
         },
         onError: (error: Error) => {
@@ -45,6 +47,7 @@ export function useAllChatMutation(isGuest: boolean) {
             isGuest ? clearAllGuestChats() : clearAllUserChats(),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["chats", isGuest ? "guest" : "user"] });
+            Router.push("/transcribe");
             toast.success("Tutte le chat sono state eliminate con successo");
         },
         onError: (error: Error) => {
