@@ -31,7 +31,7 @@ export default function TranscribeLayoutContent({ children, guestMode = false }:
       <div className="flex h-screen w-full">
         {!guestMode && (
           <AppSidebar
-            sessions={chats}
+            chats={chats}
             onDeleteSession={(id) => deleteChat.mutate(id)}
             onClearAllSessions={() => clearAllChats.mutate()}
             onNewSession={handleNewChat}

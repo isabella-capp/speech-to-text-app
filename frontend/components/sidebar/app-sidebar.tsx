@@ -40,31 +40,32 @@ import {
 } from "lucide-react"
 import type { TranscriptionChat } from "@/types/transcription"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/utils/cn"
 import { logoutAction } from "@/lib/auth-actions"
 import { useSession } from "next-auth/react"
 import { DropdownMenuLabel } from "@radix-ui/react-dropdown-menu"
 import { redirect } from "next/navigation"
 
 interface AppSidebarProps {
-  sessions: TranscriptionChat[]
+  chats: TranscriptionChat[]
   onDeleteSession: (sessionId: string) => void
   onClearAllSessions: () => void
   onNewSession: () => void
   isGuest?: boolean
 }
 
-export function AppSidebar({ sessions, onDeleteSession, onClearAllSessions, onNewSession }: AppSidebarProps) {
+export function AppSidebar({ chats, onDeleteSession, onClearAllSessions, onNewSession }: AppSidebarProps) {
   const session = useSession()
 
+  console.log("chats", chats)
   const [searchQuery, setSearchQuery] = useState("")
   const [showSearchDialog, setShowSearchDialog] = useState(false)
   const [showTriggerOnHover, setShowTriggerOnHover] = useState(false)
 
-  const filteredSessions = sessions.filter(
-    (session) =>
-      session.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      session.messages.some((msg) => msg.content.toLowerCase().includes(searchQuery.toLowerCase())),
+  const filteredChats = chats.filter(
+    (chat) =>
+      chat.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      chat.messages.some((msg) => msg.content.toLowerCase().includes(searchQuery.toLowerCase())),
   )
 
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -141,13 +142,13 @@ export function AppSidebar({ sessions, onDeleteSession, onClearAllSessions, onNe
         <div className="mb-4 text-[#758697] font-medium group-data-[collapsible=icon]:hidden">Trascrizioni</div>
         <ScrollArea className="flex-1 ">
           <SidebarMenu>
-            {sessions.length === 0 ? (
+            {chats.length === 0 ? (
               <div className="text-center py-8 text-gray-500 group-data-[collapsible=icon]:hidden">
                 <MessageSquare className="w-8 h-8 mx-auto mb-2 opacity-50" />
                 <p className="text-sm">Nessuna trascrizione</p>
               </div>
             ) : (
-              sessions.map((chat) => (
+              chats.map((chat) => (
                 <SidebarMenuItem key={chat.id}>
                   <div className="group flex items-center w-full mb-2">
                     <SidebarMenuButton
@@ -159,7 +160,7 @@ export function AppSidebar({ sessions, onDeleteSession, onClearAllSessions, onNe
                       <div className="flex-1 min-w-0">
                         <div className="truncate font-medium">{chat.title}</div>
                         <div className="text-xs text-gray-500 truncate">
-                          {chat.timestamp ? new Date(chat.timestamp).toLocaleDateString("it-IT") : "Data non disponibile"}
+                          {chat.createdAt ? new Date(chat.createdAt).toLocaleDateString("it-IT") : "Data non disponibile"}
                         </div>
                       </div>
                     </SidebarMenuButton>
@@ -227,7 +228,7 @@ export function AppSidebar({ sessions, onDeleteSession, onClearAllSessions, onNe
               <Settings className="w-4 h-4 mr-2" />
               Impostazioni
             </DropdownMenuItem>
-            {sessions.length > 0 && (
+            {chats.length > 0 && (
               <AlertDialog>
                 <AlertDialogTrigger asChild>
                   <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-red-600">
@@ -301,15 +302,15 @@ export function AppSidebar({ sessions, onDeleteSession, onClearAllSessions, onNe
                 {searchQuery && (
                   <>
                     <div className="text-sm font-medium text-gray-500 px-2">Oggi</div>
-                    {filteredSessions
-                      .filter((session) => {
+                    {filteredChats
+                      .filter((chat) => {
                         const today = new Date()
-                        const sessionDate = new Date(session.timestamp)
-                        return sessionDate.toDateString() === today.toDateString()
+                        const chatDate = new Date(chat.timestamp)
+                        return chatDate.toDateString() === today.toDateString()
                       })
-                      .map((session) => (
+                      .map((chat) => (
                         <Button
-                          key={session.id}
+                          key={chat.id}
                           variant="ghost"
                           className="w-full justify-start gap-3 p-3 h-auto hover:bg-gray-50"
                           onClick={() => {
@@ -319,13 +320,13 @@ export function AppSidebar({ sessions, onDeleteSession, onClearAllSessions, onNe
                         >
                           <MessageSquare className="w-4 h-4 text-gray-500 flex-shrink-0" />
                           <div className="text-left flex-1 min-w-0">
-                            <div className="truncate font-medium text-sm">{session.title}</div>
+                            <div className="truncate font-medium text-sm">{chat.title}</div>
                           </div>
                         </Button>
                       ))}
 
                     <div className="text-sm font-medium text-gray-500 px-2 mt-6">Ultimi 7 giorni</div>
-                    {filteredSessions
+                    {filteredChats
                       .filter((session) => {
                         const today = new Date()
                         const sessionDate = new Date(session.timestamp)
@@ -358,7 +359,7 @@ export function AppSidebar({ sessions, onDeleteSession, onClearAllSessions, onNe
                   </div>
                 )}
 
-                {searchQuery && filteredSessions.length === 0 && (
+                {searchQuery && filteredChats.length === 0 && (
                   <div className="text-center py-8 text-gray-500">
                     <MessageSquare className="w-8 h-8 mx-auto mb-2 opacity-50" />
                     <p className="text-sm">Nessun risultato trovato</p>

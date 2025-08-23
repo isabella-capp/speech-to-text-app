@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Copy, Download, FileAudio, User, AudioWaveformIcon as Waveform } from "lucide-react"
 import type { TranscriptionMessage as TMessage } from "@/types/transcription"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 
 interface TranscriptionMessageProps {
   message: TMessage
@@ -12,14 +12,10 @@ interface TranscriptionMessageProps {
 }
 
 export function TranscriptionMessage({ message, sessionTitle }: TranscriptionMessageProps) {
-  const { toast } = useToast()
 
   const copyTranscription = (text: string) => {
     navigator.clipboard.writeText(text)
-    toast({
-      title: "Copiato",
-      description: "Testo copiato negli appunti",
-    })
+    toast.success("Testo copiato negli appunti")
   }
 
   const downloadTranscription = (text: string, fileName: string) => {

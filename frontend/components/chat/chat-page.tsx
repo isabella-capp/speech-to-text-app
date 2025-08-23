@@ -4,8 +4,8 @@ import { useEffect } from "react"
 import { useParams } from "next/navigation"
 import { ChatView } from "@/components/chat/chat-view"
 import { useSession } from "next-auth/react"
-import { useModel } from "@/contexts/model-context"
-import { useTranscriptionData } from "@/hooks/use-transcription-data"
+import { useModel } from "@/lib/providers/model-provider"
+import { useTranscriptionData } from "@/hooks/use-chat"
 import { useChatMutation } from "@/hooks/use-chat-mutation"
 
 export default function ChatPage() {

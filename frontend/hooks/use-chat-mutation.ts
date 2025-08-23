@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Message } from "./use-transcription-chat/types";
+import { Message } from "@/types/transcription";
 import { addMessageToSession } from "@/lib/utils/get-transcription-session";
 
 async function getTranscription({

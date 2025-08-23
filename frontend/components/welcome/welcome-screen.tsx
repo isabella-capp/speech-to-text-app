@@ -4,7 +4,7 @@ import { useState } from "react"
 import { AudioWaveformIcon as Waveform } from "lucide-react"
 import { AudioUploader } from "../audio/audio-upload"
 import { AudioRecorder } from "../audio/audio-recorder"
-import { useModel } from "@/contexts/model-context"
+import { useModel } from "@/lib/providers/model-provider"
 import { useSession } from "next-auth/react"
 import { useStartTranscription } from "@/hooks/use-start-transcription"
 

@@ -1,8 +1,8 @@
-import { Message } from "@/hooks/use-transcription-chat/types"
+import { Message } from "@/types/transcription";
 import { TranscriptionChat } from "@/types/transcription"
 
-const GUEST_STORAGE_KEY = "guest-transcription-chat"
-const GUEST_STORAGE_DURATION = 10 * 60 * 1000 // 10 minuti
+const GUEST_STORAGE_KEY = "guest-transcription-chat";
+const GUEST_STORAGE_DURATION = 10 * 60 * 1000; // 10 minuti
 
 export function createTranscriptionSession(chat: TranscriptionChat): TranscriptionChat {
   if (typeof window === "undefined") {

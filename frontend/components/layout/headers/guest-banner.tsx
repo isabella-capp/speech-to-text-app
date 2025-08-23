@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { LogIn, X, Clock } from "lucide-react"
+import { X, Clock } from "lucide-react"
 import { useState } from "react"
 
 interface GuestBannerProps {

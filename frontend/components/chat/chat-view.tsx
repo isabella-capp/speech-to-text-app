@@ -11,8 +11,7 @@ import { Upload, Mic, Send, Square, Play, Pause, RotateCcw, Check, Volume2, Load
 import type { TranscriptionChat } from "@/types/transcription"
 import { TranscriptionMessage } from "./transcription-message"
 import { useAudioRecorder } from "@/hooks/use-audio-recorder"
-import { useToast } from "@/hooks/use-toast"
-import { useSession } from "next-auth/react"
+import { toast } from "sonner"
 
 interface ChatViewProps {
   session: TranscriptionChat
@@ -32,7 +31,6 @@ export function ChatView({ session, onTranscribe, isTranscribing }: ChatViewProp
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [showRecorder, setShowRecorder] = useState(false)
   const [recordedFile, setRecordedFile] = useState<File | null>(null)
-  const { toast } = useToast()
 
   const { isRecording, isPaused, recordingTime, formatTime, startRecording, togglePauseRecording, stopRecording } =
     useAudioRecorder()
@@ -92,16 +90,9 @@ export function ChatView({ session, onTranscribe, isTranscribing }: ChatViewProp
     const file = e.target.files?.[0]
     if (file && file.type.startsWith("audio/")) {
       setSelectedFile(file)
-      toast({
-        title: "File selezionato",
-        description: `${file.name} pronto per la trascrizione`,
-      })
+      toast.success(`File caricato: ${file.name} pronto per la trascrizione`)
     } else {
-      toast({
-        title: "Formato non supportato",
-        description: "Seleziona un file audio valido",
-        variant: "destructive",
-      })
+      toast.error("Formato non supportato: Carica un file audio valido")
     }
   }
 

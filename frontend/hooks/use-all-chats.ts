@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { TranscriptionChat } from "./use-transcription-chat/types";
+import { TranscriptionChat } from "@/types/transcription";
 import { loadGuestChats } from "@/lib/utils/get-transcription-session";
 
 const fetchUserChats = async (): Promise<TranscriptionChat[]> => {

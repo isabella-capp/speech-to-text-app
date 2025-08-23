@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useRef, useCallback } from "react"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 
 export function useAudioRecorder() {
   const [isRecording, setIsRecording] = useState(false)
@@ -13,8 +13,6 @@ export function useAudioRecorder() {
   const timerRef = useRef<NodeJS.Timeout | null>(null)
   const mimeTypeRef = useRef<string>("audio/webm")
   const fileExtensionRef = useRef<string>("webm")
-
-  const { toast } = useToast()
 
   const startTimer = () => {
     timerRef.current = setInterval(() => {
@@ -74,16 +72,9 @@ export function useAudioRecorder() {
       setRecordingTime(0)
       startTimer()
 
-      toast({
-        title: "Registrazione iniziata",
-        description: "Parla nel microfono per registrare l'audio",
-      })
+      toast.success("Registrazione iniziata: Parla nel microfono per registrare l'audio")
     } catch (error) {
-      toast({
-        title: "Errore",
-        description: "Impossibile accedere al microfono",
-        variant: "destructive",
-      })
+      toast.error("Impossibile accedere al microfono")
     }
   }, [toast])
 
