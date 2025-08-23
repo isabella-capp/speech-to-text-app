@@ -71,8 +71,6 @@ export function useAudioRecorder() {
       setIsRecording(true)
       setRecordingTime(0)
       startTimer()
-
-      toast.success("Registrazione iniziata: Parla nel microfono per registrare l'audio")
     } catch (error) {
       toast.error("Impossibile accedere al microfono")
     }

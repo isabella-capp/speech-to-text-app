@@ -22,7 +22,6 @@ export async function GET() {
 
     return NextResponse.json(chats, {
       status: 200,
-      headers: { "Cache-Tag": "chats" }, // lega la risposta al tag "chats"
     });
   } catch (error) {
     console.error(error);
@@ -80,10 +79,6 @@ export async function POST(req: Request) {
         },
       });
 
-      // invalida cache lista chat
-      revalidateTag("chats");
-      if (updatedChat) revalidateTag(`chat-${updatedChat.id}`);
-
       return NextResponse.json(updatedChat, { status: 201 });
     }
 
@@ -111,10 +106,6 @@ export async function DELETE() {
         userId: session.user.id,
       },
     });
-
-    // invalida cache lista chat
-    revalidateTag("chats")
-
 
     return NextResponse.json({ message: "Tutte le chat sono state eliminate" });
   } catch (error) {

@@ -66,9 +66,6 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
         id,
       },
     })
-    
-    revalidateTag(`chat-${id}`)
-    revalidateTag("chats")
 
     return NextResponse.json({ message: "Chat eliminata con successo" })
   } catch (error) {
@@ -116,9 +113,6 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
         },
       },
     })
-
-    revalidateTag(`chat-${id}`)
-    revalidateTag("chats")
 
     return NextResponse.json(updatedChat)
   } catch (error) {
