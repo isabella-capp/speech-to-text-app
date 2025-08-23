@@ -34,7 +34,7 @@ export function getTranscriptionSession(sessionId: string): TranscriptionChat | 
     if (!raw) return null
 
     const chat: TranscriptionChat & { createdAt?: number } = JSON.parse(raw)
-
+    console.log("Retrieved guest session:", chat)
     // opzionale: scadenza della sessione
     if (chat.createdAt && Date.now() - chat.createdAt > GUEST_STORAGE_DURATION) {
       clearTranscriptionSession(sessionId)

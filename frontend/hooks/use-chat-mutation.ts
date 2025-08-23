@@ -104,7 +104,7 @@ export function useChatMutation(chatId: string, isGuest: boolean, selectedModel:
       getTranscription({ chatId, message, selectedModel }),
     onSuccess: (data) => {
         if(isGuest){
-            addMessageToSession(chatId, data);
+            addMessageToSession(chatId, data.message);
         }
         queryClient.invalidateQueries({ queryKey: ["chat", chatId] });
         toast.success("Trascrizione completata");
