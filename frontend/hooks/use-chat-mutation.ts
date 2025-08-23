@@ -96,15 +96,36 @@ async function requestUserMessage({
   return res.json();
 }
 
+async function updateTitle(title: string, chatId: string): Promise<{ success: boolean, chat?: any }> {
+  const res = await fetch(`/api/chats/${chatId}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ title }),
+  });
+
+  if (!res.ok) {
+    throw new Error(await res.text());
+  }
+
+  return res.json();
+
+}
+
 export function useChatMutation(chatId: string, isGuest: boolean, selectedModel: string) {
   const queryClient = useQueryClient();
 
   const transcribeMessage = useMutation({
     mutationFn: (message: Message) =>
       getTranscription({ chatId, message, selectedModel }),
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
         if(isGuest){
             addMessageToSession(chatId, data.message);
+        } else {
+            const title = data.message.content.substring(0, 25);
+            const updatedChat = await updateTitle(title, chatId);
+            if (updatedChat.success) {
+                queryClient.invalidateQueries({ queryKey: ["chats", "user"] });
+            }
         }
         queryClient.invalidateQueries({ queryKey: ["chat", chatId] });
         toast.success("Trascrizione completata");
