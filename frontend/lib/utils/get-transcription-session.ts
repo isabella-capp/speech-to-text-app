@@ -53,3 +53,45 @@ export function clearTranscriptionSession(sessionId: string): void {
     sessionStorage.removeItem(`${GUEST_STORAGE_KEY}-${sessionId}`)
   }
 }
+
+export function clearAllTranscriptionSession(): void {
+  if (typeof window !== "undefined") {
+    // rimuove tutte le sessioni legate alle chat guest
+    Object.keys(sessionStorage)
+      .filter((key) => key.startsWith(GUEST_STORAGE_KEY))
+      .forEach((key) => sessionStorage.removeItem(key))
+  }
+}
+
+export const loadGuestChats = (): TranscriptionChat[] => {
+  if (typeof window === "undefined") return []
+
+  try {
+    const chats: TranscriptionChat[] = []
+
+    for (let i = 0; i < sessionStorage.length; i++) {
+      const key = sessionStorage.key(i)
+      if (key && key.startsWith(GUEST_STORAGE_KEY)) {
+        const raw = sessionStorage.getItem(key)
+        if (!raw) continue
+
+        const chat: TranscriptionChat & { createdAt?: number } = JSON.parse(raw)
+
+        // verifica scadenza
+        if (chat.createdAt && Date.now() - chat.createdAt > GUEST_STORAGE_DURATION) {
+          sessionStorage.removeItem(key)
+          continue
+        }
+
+        chats.push(chat)
+      }
+    }
+
+    return chats
+  } catch (error) {
+    console.error("Errore nel caricamento delle chat guest:", error)
+    return []
+  }
+}
+
+
