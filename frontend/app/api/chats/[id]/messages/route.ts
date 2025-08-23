@@ -73,7 +73,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
    
     const bytes = await file.arrayBuffer()
     const buffer = Buffer.from(bytes)
-    const fileName = `${Date.now()}-${file.name}`
+    const fileName = `${file.name}`
     
     const uploadDir = join(process.cwd(), "public", "uploads")
     await mkdir(uploadDir, { recursive: true })
