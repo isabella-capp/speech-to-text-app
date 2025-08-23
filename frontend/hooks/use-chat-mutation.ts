@@ -121,7 +121,7 @@ export function useChatMutation(chatId: string, isGuest: boolean, selectedModel:
         if(isGuest){
             addMessageToSession(chatId, data.message);
         } else {
-            const title = data.message.content.substring(0, 25);
+            const title = data.message.content.substring(0, 25) + "...";
             const updatedChat = await updateTitle(title, chatId);
             if (updatedChat.success) {
                 queryClient.invalidateQueries({ queryKey: ["chats", "user"] });
