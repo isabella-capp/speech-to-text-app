@@ -17,7 +17,7 @@ async function getTranscription({
   }
 
   console.log("Fetching audio from:", message.audioPath);
-  
+
   const response = await fetch(message.audioPath);
   if (!response.ok) {
     throw new Error(await response.text());
@@ -103,8 +103,11 @@ export function useChatMutation(chatId: string, isGuest: boolean, selectedModel:
     mutationFn: (message: Message) =>
       getTranscription({ chatId, message, selectedModel }),
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ["chat", chatId] });
-      toast.success("Trascrizione completata");
+        if(isGuest){
+            addMessageToSession(chatId, data);
+        }
+        queryClient.invalidateQueries({ queryKey: ["chat", chatId] });
+        toast.success("Trascrizione completata");
     },
     onError: (error: Error) => {
       console.error("Errore durante la trascrizione:", error);

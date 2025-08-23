@@ -20,7 +20,7 @@ const fetchUserChat = async (chatId: string): Promise<TranscriptionChat> => {
 
 async function loadGuestChat(chatId: string): Promise<TranscriptionChat> {
     const sessionParams = getTranscriptionSession(chatId);
-
+    
     if (!sessionParams) {
         throw new Error("Sessione scaduta o non trovata");
     }

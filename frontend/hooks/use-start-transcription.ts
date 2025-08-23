@@ -38,8 +38,10 @@ export function useStartTranscription(isGuest: boolean) {
           ...data.chat,
           timestamp: new Date(),
         }
+        console.log("Creating session for guest user:", chatData)
         const sessionId = createTranscriptionSession(chatData);
-        window.location.href = `/transcribe/chat/${sessionId}`
+        console.log("Guest session ID:", sessionId);
+        window.location.href = `/transcribe/chat/${sessionId.id}`
       } else {
         if (data.chat.id) {
           const targetPath = `/transcribe/chat/${data.chat.id}`
