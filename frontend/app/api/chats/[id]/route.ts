@@ -1,6 +1,8 @@
 import db from "@/lib/db/db"
 import { auth } from "@/lib/auth"
 import { NextResponse } from "next/server"
+import { revalidatePath, revalidateTag } from "next/cache"
+import { success } from "zod"
 
 // GET: Recupera una chat specifica con tutti i suoi messaggi
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -97,7 +99,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     })
 
     if (!chat) {
-      return NextResponse.json({ error: "Chat non trovata" }, { status: 404 })
+      return NextResponse.json({ success: false, error: "Chat non trovata" }, { status: 404 })
     }
 
     // Aggiorna il titolo
@@ -113,9 +115,9 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       },
     })
 
-    return NextResponse.json(updatedChat)
+    return NextResponse.json({ success: true, chat: updatedChat })
   } catch (error) {
     console.error(error)
-    return NextResponse.json({ error: "Errore nell'aggiornamento della chat" }, { status: 500 })
+    return NextResponse.json({ success: false, error: "Errore nell'aggiornamento della chat" }, { status: 500 })
   }
 }

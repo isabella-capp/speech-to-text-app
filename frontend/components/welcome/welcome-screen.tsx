@@ -4,79 +4,26 @@ import { useState } from "react"
 import { AudioWaveformIcon as Waveform } from "lucide-react"
 import { AudioUploader } from "../audio/audio-upload"
 import { AudioRecorder } from "../audio/audio-recorder"
-import { useToast } from "@/hooks/use-toast"
-import { useModel } from "@/contexts/model-context"
+import { useModel } from "@/lib/providers/model-provider"
 import { useSession } from "next-auth/react"
-import { useTranscription } from "@/hooks/use-trascription"
-import { TranscriptionChat } from "@/hooks/use-transcription-chat/types"
-import { useTranscriptionChats } from "@/hooks/use-transcription-chat"
+import { useStartTranscription } from "@/hooks/use-start-transcription"
 
 export default function WelcomeScreen() {
-  const { toast } = useToast()
   const { selectedModel } = useModel()
   const { data: session } = useSession()
   const isGuest = !session
-  const { addChat } = useTranscriptionChats(isGuest)
   
+  const { startTranscription } = useStartTranscription(isGuest)
+
   const [audioFile, setAudioFile] = useState<File | null>(null)
   const [dragActive, setDragActive] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
-  const {loading ,  transcribe} = useTranscription()
 
   const handleRecordingComplete = (file: File) => {
     setAudioFile(file)
   }
 
-  const onTranscribe = async (file: File) => {
-    setIsLoading(loading)
-    console.log(file)
-    try {
-      const res = await transcribe(file, selectedModel as "whisper" | "wav2vec2")
-      if (!res) return
-
-      if (isGuest) {
-      const newChat: TranscriptionChat = {
-        id: `chat_${Date.now()}`,
-        title: file.name || "Nuova Trascrizione",
-        timestamp: new Date(),
-        model: selectedModel,
-        audioFile: { name: file.name, size: file.size },
-        messages: [
-          {
-            id: `msg_${Date.now()}_user`,
-            type: "user",
-            content: `File audio: ${file.name}`,
-            timestamp: new Date(),
-            audioFile: { name: file.name, size: file.size },
-          },
-          {
-            id: `msg_${Date.now()}_transcription`,
-            type: "transcription",
-            content: res.transcription,
-            timestamp: new Date(),
-            model: res.model || selectedModel,
-          },
-        ],
-      }
-        const chatId = await addChat(newChat)
-        window.location.href = `/transcribe/chat/${chatId}`
-      } else {
-        if (res.chat?.id) {
-          const targetPath = `/transcribe/chat/${res.chat.id}`
-          window.location.href = targetPath
-        }
-      }
-    }
-    catch (error) {
-      console.error("Errore durante la trascrizione:", error)
-      toast({
-        title: "Errore",
-        description: error instanceof Error ? error.message : "Errore durante la trascrizione",
-        variant: "destructive",
-      })
-    } finally {
-      setIsLoading(false)
-    }
+  const onTranscribe = (file: File) => {
+    startTranscription.mutate({ file, selectedModel })
   }
 
   return (
@@ -96,7 +43,7 @@ export default function WelcomeScreen() {
         onTranscribe={(file) => onTranscribe(file)}
         dragActive={dragActive}
         onDragActiveChange={setDragActive}
-        isTranscribing={isLoading}
+        isTranscribing={startTranscription.isPending}
       />
 
       <AudioRecorder onRecordingComplete={handleRecordingComplete} />

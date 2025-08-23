@@ -2,11 +2,12 @@ import { notFound } from "next/navigation"
 import ChatPage from "@/components/chat/chat-page"
 
 // Pagina temporanea per le chat guest
-export default function GuestChatPage({
+export default async function GuestChatPage({
   params,
 }: {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }) {
+  const { id } = await params
 
   return (
     <ChatPage />

@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button"
 import { LogIn, Plus } from "lucide-react"
 import { ModelSelector } from "./model-selector"
-import { useModel } from "@/contexts/model-context"
+import { useModel } from "@/lib/providers/model-provider"
 import { useState } from "react"
 import { usePathname, useRouter } from "next/navigation"
 

@@ -1,4 +1,4 @@
-import { ModelProvider } from "@/contexts/model-context"
+import { ModelProvider } from "@/lib/providers/model-provider"
 import TranscribeLayoutContent from "@/components/layout/transcribe-layout-content"
 import { auth } from "@/lib/auth"
 
