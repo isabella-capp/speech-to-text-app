@@ -1,36 +1,54 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-## Getting Started
+# Frontend - Speech-to-Text App
 
-First, run the development server:
+## Descrizione generale
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+La cartella `frontend` contiene l'interfaccia utente dell'applicazione Speech-to-Text, sviluppata con Next.js e React. Il frontend è progettato per offrire un'esperienza moderna, intuitiva e responsiva, facilitando la trascrizione automatica di file audio e la gestione delle interazioni utente.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Funzionalità principali
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- **Autenticazione**: Supporto per login tramite provider OAuth (Google, GitHub), gestione sicura delle sessioni utente e protezione delle rotte sensibili.
+- **Registrazione e upload audio**: Componenti dedicati per la registrazione audio direttamente dal browser e per l'upload di file audio locali.
+- **Chat di trascrizione**: Interfaccia conversazionale che consente agli utenti di inviare audio e ricevere trascrizioni, con visualizzazione cronologica dei messaggi.
+- **Gestione trascrizioni**: Salvataggio, visualizzazione e recupero delle trascrizioni associate a ciascun utente.
+- **Sidebar e navigazione**: Layout dinamico con sidebar per la navigazione tra le diverse sezioni dell'app (trascrizioni, chat, impostazioni, ecc.).
+- **UI avanzata**: Utilizzo di componenti personalizzati (badge, card, dialog, toast, skeleton, ecc.) per migliorare l'usabilità e la coerenza visiva.
+- **Tema chiaro/scuro**: Possibilità di alternare tra modalità light e dark per una migliore accessibilità.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Architettura delle API interne
 
-## Learn More
+Il frontend implementa un sistema di API interne (API routes di Next.js) per la gestione delle operazioni lato server, tra cui:
 
-To learn more about Next.js, take a look at the following resources:
+- **Gestione utenti**: Registrazione, login, recupero dati utente, aggiornamento profilo.
+- **Gestione trascrizioni**: Salvataggio, aggiornamento e recupero delle trascrizioni audio associate agli utenti.
+- **Integrazione con FastAPI**: Le richieste di trascrizione audio vengono inviate alle API interne, che a loro volta effettuano chiamate HTTP al backend FastAPI per l'elaborazione e la restituzione del testo trascritto.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Questa architettura consente di:
+- Mantenere la logica di business e la sicurezza lato server
+- Gestire la persistenza dei dati utente e delle trascrizioni tramite database (Prisma ORM)
+- Astrarre la comunicazione con il backend, facilitando l'integrazione e la scalabilità
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Flusso di trascrizione
 
-## Deploy on Vercel
+1. L'utente registra o carica un file audio tramite l'interfaccia.
+2. Il file viene inviato ad una API interna (`/api/transcribe`), che si occupa di inoltrare la richiesta al backend FastAPI.
+3. FastAPI elabora l'audio e restituisce la trascrizione.
+4. La trascrizione viene salvata nel database e visualizzata nella chat dell'utente.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Gestione dati e sicurezza
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Tutte le informazioni sensibili (dati utente, trascrizioni) sono gestite tramite API interne e salvate in modo sicuro nel database.
+- L'autenticazione protegge le rotte e le operazioni critiche.
+- La comunicazione tra frontend e backend avviene tramite chiamate HTTP sicure.
+
+## Componenti principali
+
+- `components/audio/`: Registrazione e upload audio
+- `components/chat/`: Chat e visualizzazione trascrizioni
+- `components/auth/`: Login e autenticazione
+- `lib/db/`: Gestione database e schema Prisma
+- `app/api/`: API interne per utenti, chat, trascrizioni
+
+## Conclusione
+
+Il frontend rappresenta il punto di accesso principale per l'utente, orchestrando la raccolta, la gestione e la visualizzazione delle trascrizioni audio, integrando funzionalità avanzate di autenticazione e persistenza dati, e fungendo da ponte tra l'interfaccia utente e il backend FastAPI tramite API interne sicure ed efficienti.
