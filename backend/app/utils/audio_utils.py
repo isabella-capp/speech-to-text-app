@@ -1,4 +1,10 @@
-# backend/app/utils/audio_utils.py
+"""
+Utilities per il processamento e la conversione di file audio.
+
+Questo modulo fornisce funzioni per la decodifica, conversione e gestione
+di file audio in vari formati, utilizzando librerie come soundfile e FFmpeg.
+"""
+
 import io
 import numpy as np
 import soundfile as sf
@@ -7,8 +13,17 @@ import tempfile
 import os
 from typing import Tuple, Optional
 
+
 def detect_audio_format(audio_bytes: bytes) -> Optional[str]:
-    """Rileva il formato audio dai magic bytes"""
+    """
+    Rileva il formato audio analizzando i magic bytes.
+
+    Args:
+        audio_bytes: Array di bytes contenente l'audio.
+
+    Returns:
+        Stringa con il formato rilevato (wav, mp3, ogg, etc.) o None se non riconosciuto.
+    """
     if len(audio_bytes) < 12:
         return None
     
@@ -28,9 +43,21 @@ def detect_audio_format(audio_bytes: bytes) -> Optional[str]:
     
     return None
 
-def convert_audio_with_ffmpeg(audio_bytes: bytes, input_format: str = None) -> Tuple[np.ndarray, int]:
-    """Converte audio usando FFmpeg e restituisce array numpy float32 mono a 16kHz"""
-    
+
+def convert_audio_with_ffmpeg(audio_bytes: bytes, input_format: Optional[str] = None) -> Tuple[np.ndarray, int]:
+    """
+    Converte audio usando FFmpeg e restituisce array numpy float32 mono a 16kHz.
+
+    Args:
+        audio_bytes: Array di bytes contenente l'audio da convertire.
+        input_format: Formato dell'audio di input (opzionale).
+
+    Returns:
+        Tupla contenente (array_audio, sample_rate).
+
+    Raises:
+        Exception: Se la conversione FFmpeg fallisce.
+    """
     # Crea file temporanei
     with tempfile.NamedTemporaryFile(suffix=f'.{input_format}' if input_format else '', delete=False) as input_file:
         input_file.write(audio_bytes)
@@ -81,10 +108,23 @@ def convert_audio_with_ffmpeg(audio_bytes: bytes, input_format: str = None) -> T
         except:
             pass
 
-def decode_bytes_to_float32(audio_bytes: bytes):
+def decode_bytes_to_float32(audio_bytes: bytes) -> Tuple[np.ndarray, int]:
     """
     Decodifica bytes audio in array numpy float32 mono.
-    Supporta vari formati attraverso FFmpeg se soundfile fallisce.
+
+    Supporta vari formati attraverso multiple strategie di decodifica:
+    1. Soundfile per formati standard
+    2. FFmpeg per formati complessi
+    3. Raw PCM come fallback
+
+    Args:
+        audio_bytes: Array di bytes contenente l'audio da decodificare.
+
+    Returns:
+        Tupla contenente (array_audio, sample_rate).
+
+    Raises:
+        Exception: Se tutti i metodi di decodifica falliscono.
     """
     try:
         # Prova prima con soundfile per file audio standard (WAV, MP3, etc.)
@@ -124,8 +164,14 @@ def decode_bytes_to_float32(audio_bytes: bytes):
                 print(f"Raw PCM decode also failed: {e3}")
                 raise Exception(f"Cannot decode audio data: soundfile error: {e}, FFmpeg error: {e2}, raw PCM error: {e3}")
 
-def get_supported_audio_formats():
-    """Restituisce la lista dei formati audio supportati"""
+
+def get_supported_audio_formats() -> list[str]:
+    """
+    Ottieni la lista dei formati audio supportati.
+
+    Returns:
+        Lista di stringhe con i MIME types dei formati audio supportati.
+    """
     return [
         'audio/wav', 'audio/wave', 'audio/x-wav',
         'audio/mp3', 'audio/mpeg', 'audio/mp4', 'audio/m4a',

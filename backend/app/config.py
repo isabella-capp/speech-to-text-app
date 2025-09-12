@@ -1,8 +1,23 @@
+"""
+Configurazione dell'applicazione Speech-to-Text.
+
+Gestisce le impostazioni globali dell'applicazione utilizzando Pydantic
+per la validazione e il caricamento da variabili d'ambiente.
+"""
+
 from pydantic_settings import BaseSettings
 from pydantic import ConfigDict
 from typing import List
 
+
 class Settings(BaseSettings):
+    """
+    Configurazione dell'applicazione.
+    
+    Carica le impostazioni da variabili d'ambiente con fallback ai valori di default.
+    Supporta il caricamento da file .env per lo sviluppo locale.
+    """
+    
     model_config = ConfigDict(env_file=".env", extra='ignore')
     
     # Server settings
@@ -18,9 +33,15 @@ class Settings(BaseSettings):
         "http://127.0.0.1:3001"
     ]
     
-    # Model settings
-    whisper_model: str = "base"  # tiny, base, small, medium, large
-    # Usa il modello di Jonatas Grosman che è specificamente fine-tuned per l'italiano
-    wav2vec2_model: str = "jonatasgrosman/wav2vec2-large-xlsr-53-italian"
+    def get_server_url(self) -> str:
+        """
+        Ottieni l'URL completo del server.
 
+        Returns:
+            URL del server nel formato http://host:port.
+        """
+        return f"http://{self.HOST}:{self.PORT}"
+
+
+# Istanza singleton delle impostazioni
 settings = Settings()
