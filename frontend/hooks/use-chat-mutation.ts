@@ -1,50 +1,69 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
-import { Message } from "@/types/transcription";
-import { addMessageToSession } from "@/lib/utils/get-transcription-session";
+import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { toast } from "sonner"
+import type { Message } from "@/types/transcription"
+import { addMessageToSession } from "@/lib/utils/get-transcription-session"
 
 async function getTranscription({
   chatId,
   message,
   selectedModel,
 }: {
-  chatId: string;
-  message: Message;
-  selectedModel: string;
+  chatId: string
+  message: Message
+  selectedModel: string
 }) {
   if (!message.audioPath) {
-    throw new Error("Percorso audio non trovato");
+    throw new Error("Percorso audio non trovato")
   }
 
-  console.log("Fetching audio from:", message.audioPath);
+  console.log("Fetching audio from:", message.audioPath)
 
-  const response = await fetch(message.audioPath);
+  const response = await fetch(message.audioPath)
   if (!response.ok) {
-    throw new Error(await response.text());
+    throw new Error(await response.text())
   }
 
-  const buffer = await response.arrayBuffer();
-  const fileName = message.audioName || `audio_${Date.now()}.wav`;
-  const type = response.headers.get("content-type") || "audio/wav";
+  const buffer = await response.arrayBuffer()
+  const fileName = message.audioName || `audio_${Date.now()}.wav`
+  const type = response.headers.get("content-type") || "audio/wav"
+
+  const audioBlob = new Blob([buffer], { type })
+  const audioUrl = URL.createObjectURL(audioBlob)
+  const audio = new Audio(audioUrl)
+
+  let audioLengthMs = 0
+  try {
+    await new Promise((resolve, reject) => {
+      audio.onloadedmetadata = () => {
+        audioLengthMs = audio.duration * 1000
+        URL.revokeObjectURL(audioUrl)
+        resolve(null)
+      }
+      audio.onerror = reject
+    })
+  } catch (error) {
+    console.warn("Could not determine audio length:", error)
+  }
 
   const fileInfo = {
     buffer: Array.from(new Uint8Array(buffer)),
     fileName,
     type,
     model: selectedModel,
-  };
+    audioLengthMs,
+  }
 
   const res = await fetch(`/api/transcribe/${chatId}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ fileInfo }),
-  });
+  })
 
   if (!res.ok) {
-    throw new Error(await res.text());
+    throw new Error(await res.text())
   }
 
-  return res.json();
+  return res.json()
 }
 
 async function requestGuestMessage({
@@ -52,9 +71,9 @@ async function requestGuestMessage({
   file,
   selectedModel,
 }: {
-  chatId: string;
-  file: File;
-  selectedModel: string;
+  chatId: string
+  file: File
+  selectedModel: string
 }) {
   const audioMessage: Message = {
     id: `temp-${Date.now()}`,
@@ -65,10 +84,10 @@ async function requestGuestMessage({
     audioSize: file.size,
     modelName: selectedModel,
     timestamp: new Date(),
-  };
+  }
 
-  addMessageToSession(chatId, audioMessage);
-  return audioMessage;
+  addMessageToSession(chatId, audioMessage)
+  return audioMessage
 }
 
 async function requestUserMessage({
@@ -76,65 +95,67 @@ async function requestUserMessage({
   file,
   selectedModel,
 }: {
-  chatId: string;
-  file: File;
-  selectedModel: string;
+  chatId: string
+  file: File
+  selectedModel: string
 }) {
-  const formData = new FormData();
-  formData.append("audio", file);
-  formData.append("model", selectedModel);
+  const formData = new FormData()
+  formData.append("audio", file)
+  formData.append("model", selectedModel)
 
   const res = await fetch(`/api/chats/${chatId}/messages`, {
     method: "POST",
     body: formData,
-  });
+  })
 
   if (!res.ok) {
-    throw new Error(await res.text());
+    throw new Error(await res.text())
   }
 
-  return res.json();
+  return res.json()
 }
 
-async function updateTitle(title: string, chatId: string): Promise<{ success: boolean, chat?: any }> {
+async function updateTitle(title: string, chatId: string): Promise<{ success: boolean; chat?: any }> {
   const res = await fetch(`/api/chats/${chatId}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ title }),
-  });
+  })
 
   if (!res.ok) {
-    throw new Error(await res.text());
+    throw new Error(await res.text())
   }
 
-  return res.json();
-
+  return res.json()
 }
 
 export function useChatMutation(chatId: string, isGuest: boolean, selectedModel: string) {
-  const queryClient = useQueryClient();
+  const queryClient = useQueryClient()
 
   const transcribeMessage = useMutation({
-    mutationFn: (message: Message) =>
-      getTranscription({ chatId, message, selectedModel }),
+    mutationFn: (message: Message) => getTranscription({ chatId, message, selectedModel }),
     onSuccess: async (data) => {
-        if(isGuest){
-            addMessageToSession(chatId, data.message);
-        } else {
-            const title = data.message.content.substring(0, 25) + "...";
-            const updatedChat = await updateTitle(title, chatId);
-            if (updatedChat.success) {
-                queryClient.invalidateQueries({ queryKey: ["chats", "user"] });
-            }
+      if (isGuest) {
+        const enhancedMessage = {
+          ...data.message,
+          processingTimeMs: data.processingTimeMs,
         }
-        queryClient.invalidateQueries({ queryKey: ["chat", chatId] });
-        toast.success("Trascrizione completata");
+        addMessageToSession(chatId, enhancedMessage)
+      } else {
+        const title = data.message.content.substring(0, 25) + "..."
+        const updatedChat = await updateTitle(title, chatId)
+        if (updatedChat.success) {
+          queryClient.invalidateQueries({ queryKey: ["chats", "user"] })
+        }
+      }
+      queryClient.invalidateQueries({ queryKey: ["chat", chatId] })
+      toast.success("Trascrizione completata")
     },
     onError: (error: Error) => {
-      console.error("Errore durante la trascrizione:", error);
-      toast.error(error.message || "Errore durante la trascrizione");
+      console.error("Errore durante la trascrizione:", error)
+      toast.error(error.message || "Errore durante la trascrizione")
     },
-  });
+  })
 
   const requestMessage = useMutation({
     mutationFn: (file: File) =>
@@ -142,14 +163,14 @@ export function useChatMutation(chatId: string, isGuest: boolean, selectedModel:
         ? requestGuestMessage({ chatId, file, selectedModel })
         : requestUserMessage({ chatId, file, selectedModel }),
     onSuccess: (data) => {
-        transcribeMessage.mutate(data);
-        queryClient.invalidateQueries({ queryKey: ["chat", chatId] });
+      transcribeMessage.mutate(data)
+      queryClient.invalidateQueries({ queryKey: ["chat", chatId] })
     },
     onError: (error: Error) => {
-      console.error("Errore nell'invio del messaggio:", error);
-      toast.error(error.message || "Errore nell'invio del messaggio");
+      console.error("Errore nell'invio del messaggio:", error)
+      toast.error(error.message || "Errore nell'invio del messaggio")
     },
-  });
+  })
 
-  return { requestMessage, transcribeMessage };
+  return { requestMessage, transcribeMessage }
 }

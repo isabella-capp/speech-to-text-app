@@ -53,11 +53,6 @@ Modelli disponibili:
   - Qualità: Molto alta
   - Dimensione: Grande
 
-- **Lightweight**
-  - Nome: `leandroreturns/wav2vec2-xlsr-italian`
-  - Qualità: Media
-  - Dimensione: Media
-
 #### 2. Whisper
 - Implementato tramite `faster-whisper`
 - Supporto per trascrizioni multilingua
@@ -105,11 +100,6 @@ Il modello predefinito (`facebook/wav2vec2-large-xlsr-53-italian`) è stato scel
    - Maggiore accuratezza
    - Ottimizzato specificamente per l'italiano
    - Richiede più risorse
-
-3. **Lightweight**
-   - Performance più veloce
-   - Minore utilizzo di memoria
-   - Leggermente meno accurato
 
 ## 📦 Requisiti di Sistema
 
