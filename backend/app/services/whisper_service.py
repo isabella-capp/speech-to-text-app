@@ -9,11 +9,13 @@ import torch
 import whisper
 import torchaudio
 import numpy as np
-from typing import Dict, Any
+import time
+from typing import Dict, Any, Optional
 
 from app.interfaces.asr_interface import ASRServiceInterface
 from app.utils.audio_utils import decode_bytes_to_float32
 from app.models.model_manager import ASRModelManager, ModelSize
+from app.utils.metrics import calculate_detailed_metrics
 
 
 class WhisperService(ASRServiceInterface):
@@ -103,6 +105,76 @@ class WhisperService(ASRServiceInterface):
                 return "Nessun audio rilevato o audio non comprensibile."
                 
             return text
+        except Exception as e:
+            print(f"Transcription error: {e}")
+            raise Exception(f"Errore durante la trascrizione: {str(e)}")
+
+    async def transcribe_with_metrics(
+        self, 
+        audio_bytes: bytes, 
+        reference_text: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """
+        Trascrivi audio bytes in testo e calcola metriche di valutazione.
+
+        Args:
+            audio_bytes: Array di bytes contenente l'audio da trascrivere.
+            reference_text: Testo di riferimento per calcolo WER/CER (opzionale).
+
+        Returns:
+            Dizionario contenente:
+            - text: Trascrizione dell'audio
+            - inference_time: Tempo di inferenza in secondi
+            - metrics: Metriche WER, CER se reference_text è fornito
+            - model_info: Informazioni sul modello utilizzato
+
+        Raises:
+            Exception: Se si verifica un errore durante la trascrizione.
+        """
+        try:
+            self._load_model()
+            
+            print(f"Processing {len(audio_bytes)} bytes of audio data")
+            
+            # Misura il tempo di inferenza
+            start_time = time.perf_counter()
+            
+            pcm, sr = decode_bytes_to_float32(audio_bytes)
+            print(f"Decoded audio: {len(pcm)} samples at {sr}Hz")
+            
+            # Resample a 16kHz se necessario
+            pcm = self._resample_audio(pcm, sr)
+
+            # Whisper richiede float32 numpy mono
+            result = self.model.transcribe(pcm, fp16=False)
+            text = result["text"].strip()
+            
+            # Fine misurazione tempo
+            end_time = time.perf_counter()
+            inference_time = end_time - start_time
+            
+            print(f"Transcription completed in {inference_time:.3f}s: '{text}'")
+            
+            # Verifica che ci sia effettivamente del testo
+            if not text:
+                print("Warning: Whisper returned empty transcription")
+                text = "Nessun audio rilevato o audio non comprensibile."
+            
+            # Prepara la risposta
+            response = {
+                "text": text,
+                "inference_time": inference_time,
+                "model_info": self.get_model_info()
+            }
+            
+            # Calcola metriche se fornito il testo di riferimento
+            if reference_text:
+                metrics = calculate_detailed_metrics(reference_text, text)
+                response["metrics"] = metrics
+                print(f"Metrics calculated - WER: {metrics['wer']:.3f}, CER: {metrics['cer']:.3f}")
+            
+            return response
+            
         except Exception as e:
             print(f"Transcription error: {e}")
             raise Exception(f"Errore durante la trascrizione: {str(e)}")
