@@ -64,13 +64,13 @@ export function EvaluationTable({ evaluations }: EvaluationTableProps) {
                     <div className="space-y-1">
                       <div className="flex justify-between">
                         <span className="text-blue-600 font-medium">Whisper:</span>
-                        <span>{formatWER(1 - evaluation.whisperWer)}</span>
+                        <span>{formatWER(1 - (evaluation.models.find(m => m.model === "Whisper")?.wer ?? 1))}</span>
                       </div>
                       <div className="flex justify-between text-xs text-gray-500">
                         <span>Tempo:</span>
                         <span className="flex items-center gap-1">
                           <Clock className="w-3 h-3" />
-                          {formatProcessingTime(evaluation.whisperProcessingTime)}
+                          {formatProcessingTime(evaluation.models.find(m => m.model === "Whisper")?.processingTime ?? 0)}
                         </span>
                       </div>
                     </div>
@@ -78,13 +78,13 @@ export function EvaluationTable({ evaluations }: EvaluationTableProps) {
                     <div className="space-y-1">
                       <div className="flex justify-between">
                         <span className="text-purple-600 font-medium">Wav2Vec2:</span>
-                        <span>{formatWER(1 - evaluation.wav2vec2Wer)}</span>
+                        <span>{formatWER(1 - (evaluation.models.find(m => m.model === "Wav2Vec2")?.wer ?? 1))}</span>
                       </div>
                       <div className="flex justify-between text-xs text-gray-500">
                         <span>Tempo:</span>
                         <span className="flex items-center gap-1">
                           <Clock className="w-3 h-3" />
-                          {formatProcessingTime(evaluation.wav2vec2ProcessingTime)}
+                          {formatProcessingTime(evaluation.models.find(m => m.model === "Wav2Vec2")?.processingTime ?? 0)}
                         </span>
                       </div>
                     </div>

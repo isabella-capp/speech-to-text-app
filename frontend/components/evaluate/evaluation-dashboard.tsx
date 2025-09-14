@@ -3,14 +3,14 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { BarChart3, Trophy, TrendingUp, FileAudio } from "lucide-react"
-import { useEvaluationHistory } from "@/hooks/use-evaluate-model"
+import { useMetrics } from "@/hooks/use-metrics"
 import { EvaluationChart } from "./evaluation-chart"
 import { EvaluationTable } from "./evaluation-table"
 import type { SavedEvaluation } from "@/types/evaluation"
 import Link from "next/link"
 
 export function EvaluationDashboard() {
-  const { data: evaluations = [], isLoading, error } = useEvaluationHistory()
+  const { data: evaluations = [], isLoading, error } = useMetrics()
 
   if (isLoading) {
     return (
@@ -44,15 +44,9 @@ export function EvaluationDashboard() {
       <div className="mb-8">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Dashboard Valutazioni</h1>
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">Dashboard Valutazioni</h1>
             <p className="text-gray-600">Analisi delle prestazioni dei modelli di trascrizione</p>
           </div>
-          <Link href="/transcribe/evaluate">
-            <Button>
-              <BarChart3 className="w-4 h-4 mr-2" />
-              Nuova Valutazione
-            </Button>
-          </Link>
         </div>
       </div>
 

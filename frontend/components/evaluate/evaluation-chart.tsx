@@ -3,18 +3,25 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts"
 import type { SavedEvaluation } from "@/types/evaluation"
+import { Whisper } from "next/font/google"
 
 interface EvaluationChartProps {
   evaluations: SavedEvaluation[]
 }
 
 export function EvaluationChart({ evaluations }: EvaluationChartProps) {
-  // Prepara i dati per il grafico a barre (WER comparison)
-  const werData = evaluations.slice(-10).map((evaluation, index) => ({
-    name: `Test ${index + 1}`,
-    Whisper: (1 - evaluation.whisperWer) * 100,
-    Wav2Vec2: (1 - evaluation.wav2vec2Wer) * 100,
-  }))
+
+ // Prepara i dati per il grafico a barre (WER comparison)
+  const werData = evaluations.slice(-10).map((evaluation, index) => {
+    const whisper = evaluation.models.find(m => m.model === "Whisper")
+    const wav2vec2 = evaluation.models.find(m => m.model === "Wav2Vec2")
+
+    return {
+      name: `Test ${index + 1}`,
+      Whisper: whisper ? (1 - whisper.wer) * 100 : 0,
+      Wav2Vec2: wav2vec2 ? (1 - wav2vec2.wer) * 100 : 0,
+    }
+  })
 
   // Prepara i dati per il grafico a torta (vittorie)
   const whisperWins = evaluations.filter((e: SavedEvaluation) => e.winner === "Whisper").length

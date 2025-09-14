@@ -13,7 +13,18 @@ interface EvaluationResultsProps {
 }
 
 export function EvaluationResults({ results }: EvaluationResultsProps) {
-  const { whisper, wav2vec2, comparison } = results
+  const whisper = results.models.find(m => m.model === "Whisper")
+  const wav2vec2 = results.models.find(m => m.model === "Wav2Vec2")
+  const comparison = results.comparison
+
+  // Se non abbiamo entrambi i modelli, mostra un messaggio di errore
+  if (!whisper || !wav2vec2) {
+    return (
+      <div className="text-center p-8">
+        <p className="text-red-600">Dati incompleti: mancano risultati per Whisper o Wav2Vec2</p>
+      </div>
+    )
+  }
 
   const getBadgeVariant = (score: number) => {
     if (score >= 0.9) return "default"

@@ -65,7 +65,6 @@ interface AppSidebarProps {
 export function AppSidebar({ chats, onDeleteSession, onClearAllSessions, onNewSession }: AppSidebarProps) {
   const session = useSession()
 
-  console.log("chats", chats)
   const [searchQuery, setSearchQuery] = useState("")
   const [showSearchDialog, setShowSearchDialog] = useState(false)
   const [showTriggerOnHover, setShowTriggerOnHover] = useState(false)

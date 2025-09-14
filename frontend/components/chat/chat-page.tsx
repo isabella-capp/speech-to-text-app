@@ -16,7 +16,6 @@ export default function ChatPage() {
   const params = useParams()
   const chatId = params.id as string
 
-  console.log("Chat ID:", chatId);
   // Usa useQuery per ottenere i dati della chat
   const { data: chat, isLoading, isError, error } = useTranscriptionData(chatId, isGuest)
   

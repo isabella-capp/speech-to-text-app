@@ -1,4 +1,5 @@
 export interface ModelEvaluationResult {
+  model: string             
   transcription: string
   wer: number
   substitutions: number
@@ -8,8 +9,7 @@ export interface ModelEvaluationResult {
 }
 
 export interface EvaluationResult {
-  whisper: ModelEvaluationResult
-  wav2vec2: ModelEvaluationResult
+  models: ModelEvaluationResult[]  // array di risultati, estensibile
   comparison: {
     winner: string
     winnerScore: number
@@ -30,18 +30,7 @@ export interface SavedEvaluation {
   userId: string
   audioFileName: string
   correctTranscription: string
-  whisperTranscription: string
-  whisperWer: number
-  whisperSubstitutions: number
-  whisperInsertions: number
-  whisperDeletions: number
-  whisperProcessingTime: number
-  wav2vec2Transcription: string
-  wav2vec2Wer: number
-  wav2vec2Substitutions: number
-  wav2vec2Insertions: number
-  wav2vec2Deletions: number
-  wav2vec2ProcessingTime: number
+  models: SavedModelResult[]     // relazione 1-N
   winner: string
   winnerScore: number
   improvement: number
@@ -49,10 +38,34 @@ export interface SavedEvaluation {
   updatedAt: string
 }
 
-export interface EvaluationResultForDB {
-  whisperResult: ModelEvaluationResult
-  wav2vec2Result: ModelEvaluationResult
-  winner: string
-  winnerScore: number
-  improvement: number
+// Tipo basato sul database reale  
+export interface TranscriptionMetrics {
+  id: string
+  messageId: string
+  groundTruthText: string
+  wordErrorRate: number | null
+  characterErrorRate: number | null
+  literalSimilarity: number | null
+  accuracy: number | null
+  processingTimeMs: number | null
+  audioLengthMs: number | null
+  evaluationModel: string | null
+  evaluatedAt: string
+  message: {
+    content: string
+    audioName: string | null
+    modelName: string | null
+  }
+}
+
+export interface SavedModelResult {
+  id: string
+  evaluationId: string
+  model: string                  // "whisper", "wav2vec2"
+  transcription: string
+  wer: number
+  substitutions: number
+  insertions: number
+  deletions: number
+  processingTime: number
 }

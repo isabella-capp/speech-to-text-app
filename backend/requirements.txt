@@ -13,3 +13,4 @@ PyJWT
 python-jose[cryptography]
 email-validator
 ffmpeg-python
+jiwer

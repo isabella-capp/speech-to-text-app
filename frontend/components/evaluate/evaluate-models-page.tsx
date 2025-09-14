@@ -12,7 +12,7 @@ import { Separator } from "@/components/ui/separator"
 import { Progress } from "@/components/ui/progress"
 import { AlertCircle, Loader2, BarChart3 } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { useEvaluateModels } from "@/hooks/use-evaluate-model"
+import { useMetricsMutation } from "@/hooks/use-metrics-mutation"
 import { EvaluationResults } from "./evaluation-results"
 import { BackendStatusChecker } from "./backend-status-checker"
 import Link from "next/link"
@@ -22,7 +22,7 @@ export function EvaluateModelsPage() {
   const [correctTranscription, setCorrectTranscription] = useState("")
   const [dragActive, setDragActive] = useState(false)
 
-  const { evaluateModels, isEvaluating, results, error } = useEvaluateModels()
+  const { evaluateModels, isEvaluating, results, error } = useMetricsMutation()
 
   const handleRecordingComplete = (file: File) => {
     setAudioFile(file)
