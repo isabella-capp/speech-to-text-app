@@ -20,6 +20,7 @@ model User {
   Authenticator Authenticator[] // Optional for WebAuthn support
   chats         Chat[]
   transcriptions Transcription[]
+  metrics       UserMetrics?    // Optional for user metrics aggregation
 
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
@@ -104,6 +105,8 @@ model Message {
   type      MessageType @default(TRANSCRIPTION)
   chatId    String
   chat      Chat        @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  
+  metrics   TranscriptionMetrics?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -123,4 +126,55 @@ model Transcription {
 
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
+}
+
+model TranscriptionMetrics {
+  id                    String   @id @default(cuid())
+  messageId             String   @unique
+  message               Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  
+  // Ground truth and evaluation data
+  groundTruthText       String   // The correct transcription provided by user
+  
+  // Metrics scores (0-1 range)
+  wordErrorRate         Float?   // WER score
+  characterErrorRate    Float?   // CER score  
+  bleuScore            Float?   // BLEU score
+  semanticSimilarity   Float?   // Semantic similarity score
+  
+  // Processing metrics
+  processingTimeMs     Int?     // Time taken for transcription
+  audioLengthMs        Int?     // Length of audio file
+  
+  // Additional metadata
+  evaluatedAt          DateTime @default(now())
+  evaluationModel      String?  // Model used for evaluation
+  
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+}
+
+model UserMetrics {
+  id                   String   @id @default(cuid())
+  userId               String   @unique
+  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Aggregated metrics
+  totalTranscriptions  Int      @default(0)
+  averageWER          Float?
+  averageCER          Float?
+  averageBLEU         Float?
+  averageSemanticSim  Float?
+  
+  // Model usage statistics
+  whisperUsage        Int      @default(0)
+  wav2vec2Usage       Int      @default(0)
+  
+  // Performance metrics
+  totalProcessingTime Int      @default(0)
+  totalAudioLength    Int      @default(0)
+  
+  lastUpdated         DateTime @updatedAt
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
 }

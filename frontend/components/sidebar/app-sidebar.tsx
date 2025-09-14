@@ -51,7 +51,8 @@ import { cn } from "@/lib/utils/cn"
 import { logoutAction } from "@/lib/auth-actions"
 import { useSession } from "next-auth/react"
 import { DropdownMenuLabel } from "@radix-ui/react-dropdown-menu"
-import { useRouter } from "next/navigation"
+import { redirect } from "next/navigation"
+import Link from "next/link" // Added Link import for navigation
 
 interface AppSidebarProps {
   chats: TranscriptionChat[]
@@ -63,7 +64,6 @@ interface AppSidebarProps {
 
 export function AppSidebar({ chats, onDeleteSession, onClearAllSessions, onNewSession }: AppSidebarProps) {
   const session = useSession()
-  const router = useRouter()
 
   console.log("chats", chats)
   const [searchQuery, setSearchQuery] = useState("")
@@ -77,14 +77,6 @@ export function AppSidebar({ chats, onDeleteSession, onClearAllSessions, onNewSe
   )
 
   const [isCollapsed, setIsCollapsed] = useState(false)
-
-  const handleMetricsClick = () => {
-    router.push("/transcribe/metrics")
-  }
-
-  const handleChatClick = (chatId: string) => {
-    router.push(`/transcribe/chat/${chatId}`)
-  }
 
   return (
     <Sidebar collapsible="icon" className="border-r">
@@ -134,6 +126,22 @@ export function AppSidebar({ chats, onDeleteSession, onClearAllSessions, onNewSe
           <span className="group-data-[collapsible=icon]:hidden">Nuova Trascrizione</span>
         </Button>
 
+        <Link href="/transcribe/evaluate">
+          <Button
+            className={cn(
+              "bg-transparent shadow-white text-black hover:bg-[#f0f2f4]/50",
+              "group-data-[collapsible=icon]:w-8 group-data-[collapsible=icon]:h-8",
+              "group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:justify-center",
+              "group-data-[collapsible=icon]:rounded-lg",
+              "w-full justify-start gap-2 p-5",
+            )}
+            title="Valuta Modelli"
+          >
+            <BarChart3 className="w-4 h-4 group-data-[collapsible=icon]:w-5 group-data-[collapsible=icon]:h-5" />
+            <span className="group-data-[collapsible=icon]:hidden">Valuta Modelli</span>
+          </Button>
+        </Link>
+
         <Button
           className={cn(
             "bg-transparent shadow-white text-black hover:bg-[#f0f2f4]/50",
@@ -147,21 +155,6 @@ export function AppSidebar({ chats, onDeleteSession, onClearAllSessions, onNewSe
         >
           <Search className="w-4 h-4 group-data-[collapsible=icon]:w-5 group-data-[collapsible=icon]:h-5" />
           <span className="group-data-[collapsible=icon]:hidden">Cerca trascrizioni</span>
-        </Button>
-
-        <Button
-          className={cn(
-            "bg-transparent shadow-white text-black hover:bg-[#f0f2f4]/50",
-            "group-data-[collapsible=icon]:w-8 group-data-[collapsible=icon]:h-8",
-            "group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:justify-center",
-            "group-data-[collapsible=icon]:rounded-lg",
-            "w-full justify-start gap-2 p-5",
-          )}
-          onClick={handleMetricsClick}
-          title="Dashboard Metriche"
-        >
-          <BarChart3 className="w-4 h-4 group-data-[collapsible=icon]:w-5 group-data-[collapsible=icon]:h-5" />
-          <span className="group-data-[collapsible=icon]:hidden">Dashboard Metriche</span>
         </Button>
       </SidebarHeader>
 
@@ -180,7 +173,7 @@ export function AppSidebar({ chats, onDeleteSession, onClearAllSessions, onNewSe
                   <div className="group flex items-center w-full mb-2">
                     <SidebarMenuButton
                       className="flex-1 justify-start group-data-[collapsible=icon]:hidden py-5 hover:bg-[#f0f2f4]/60"
-                      onClick={() => handleChatClick(chat.id)}
+                      onClick={() => redirect(chat.id)}
                       title={chat.title}
                     >
                       <MessageSquare className="w-4 h-4 mr-2 flex-shrink-0" />
@@ -255,9 +248,11 @@ export function AppSidebar({ chats, onDeleteSession, onClearAllSessions, onNewSe
               <Settings className="w-4 h-4 mr-2" />
               Impostazioni
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={handleMetricsClick}>
-              <BarChart3 className="w-4 h-4 mr-2" />
-              Dashboard Metriche
+            <DropdownMenuItem>
+               <Link href="/transcribe/evaluate/dashboard" className="flex flex-row">
+                  <BarChart3 className="w-4 h-4 mr-2" />
+                  Dashboard Metriche
+               </Link>
             </DropdownMenuItem>
             {chats.length > 0 && (
               <AlertDialog>
@@ -345,7 +340,7 @@ export function AppSidebar({ chats, onDeleteSession, onClearAllSessions, onNewSe
                           variant="ghost"
                           className="w-full justify-start gap-3 p-3 h-auto hover:bg-gray-50"
                           onClick={() => {
-                            handleChatClick(chat.id)
+                            // Logica per selezionare la chat
                             setShowSearchDialog(false)
                           }}
                         >
@@ -370,7 +365,7 @@ export function AppSidebar({ chats, onDeleteSession, onClearAllSessions, onNewSe
                           variant="ghost"
                           className="w-full justify-start gap-3 p-3 h-auto hover:bg-gray-50"
                           onClick={() => {
-                            handleChatClick(session.id)
+                            // Logica per selezionare la chat
                             setShowSearchDialog(false)
                           }}
                         >

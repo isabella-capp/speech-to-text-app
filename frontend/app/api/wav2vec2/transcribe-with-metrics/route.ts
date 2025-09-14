@@ -1,48 +1,45 @@
-import { NextResponse } from "next/server"
+import { NextRequest, NextResponse } from "next/server"
 
-const BACKEND_BASE_URL = process.env.BACKEND_BASE_URL || "http://localhost:8000"
-
-export async function POST(req: Request) {
+export async function POST(request: NextRequest) {
   try {
-    const formData = await req.formData()
-    
-    // Crea un nuovo FormData per il backend
-    const backendFormData = new FormData()
-    
+    const formData = await request.formData()
     const file = formData.get("file") as File
-    if (!file) {
+    const referenceText = formData.get("reference_text") as string
+
+    if (!file || !referenceText) {
       return NextResponse.json(
-        { detail: "File audio mancante" },
+        { error: "File e testo di riferimento sono richiesti" },
         { status: 400 }
       )
     }
-    
-    backendFormData.append("file", file)
-    
-    // Se c'è un testo di riferimento, aggiungilo
-    const referenceText = formData.get("reference_text") as string
-    if (referenceText) {
-      backendFormData.append("reference_text", referenceText)
-    }
 
-    // Invia la richiesta al backend Python
-    const response = await fetch(`${BACKEND_BASE_URL}/api/v1/wav2vec2/transcribe-with-metrics`, {
+    // Crea FormData per il backend Python
+    const backendFormData = new FormData()
+    backendFormData.append("file", file)
+    backendFormData.append("reference_text", referenceText)
+
+    // Chiamata al backend Python
+    const backendResponse = await fetch("http://localhost:8000/wav2vec2/transcribe-with-metrics", {
       method: "POST",
       body: backendFormData,
     })
 
-    if (!response.ok) {
-      const errorData = await response.json()
-      return NextResponse.json(errorData, { status: response.status })
+    if (!backendResponse.ok) {
+      const errorText = await backendResponse.text()
+      console.error("Backend error:", errorText)
+      return NextResponse.json(
+        { error: "Errore del backend durante la trascrizione Wav2Vec2" },
+        { status: backendResponse.status }
+      )
     }
 
-    const data = await response.json()
-    return NextResponse.json(data)
+    const result = await backendResponse.json()
+    return NextResponse.json(result)
 
   } catch (error) {
     console.error("Errore durante la trascrizione Wav2Vec2:", error)
     return NextResponse.json(
-      { detail: "Errore interno del server" },
+      { error: "Errore interno del server" },
       { status: 500 }
     )
   }
