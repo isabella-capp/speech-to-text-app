@@ -27,7 +27,7 @@ export function ChatView({ session, onTranscribe, isTranscribing }: ChatViewProp
   const [isPlaying, setIsPlaying] = useState(false)
   const scrollAreaRef = useRef<HTMLDivElement>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
-  
+
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [showRecorder, setShowRecorder] = useState(false)
   const [recordedFile, setRecordedFile] = useState<File | null>(null)
@@ -35,15 +35,14 @@ export function ChatView({ session, onTranscribe, isTranscribing }: ChatViewProp
   const { isRecording, isPaused, recordingTime, formatTime, startRecording, togglePauseRecording, stopRecording } =
     useAudioRecorder()
 
-  // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
     const scrollToBottom = () => {
       // Method 1: Using the messagesEndRef with better options
       if (messagesEndRef.current) {
-        messagesEndRef.current.scrollIntoView({ 
-          behavior: 'smooth',
-          block: 'nearest',
-          inline: 'nearest'
+        messagesEndRef.current.scrollIntoView({
+          behavior: "smooth",
+          block: "nearest",
+          inline: "nearest",
         })
       }
 
@@ -53,7 +52,7 @@ export function ChatView({ session, onTranscribe, isTranscribing }: ChatViewProp
         if (viewport) {
           viewport.scrollTo({
             top: viewport.scrollHeight,
-            behavior: 'smooth'
+            behavior: "smooth",
           })
         }
       }
@@ -63,28 +62,11 @@ export function ChatView({ session, onTranscribe, isTranscribing }: ChatViewProp
     const timeoutId = requestAnimationFrame(() => {
       scrollToBottom()
       // Secondary scroll after DOM updates
-      setTimeout(scrollToBottom, 50)
+      setTimeout(scrollToBottom, 100)
     })
 
     return () => cancelAnimationFrame(timeoutId)
-  }, [session.messages.length]) // Solo quando cambia il numero di messaggi
-
-  // Additional scroll effect for when transcription starts/stops
-  useEffect(() => {
-    if (isTranscribing) {
-      const timeoutId = setTimeout(() => {
-        if (messagesEndRef.current) {
-          messagesEndRef.current.scrollIntoView({ 
-            behavior: 'smooth',
-            block: 'nearest',
-            inline: 'nearest'
-          })
-        }
-      }, 100)
-      
-      return () => clearTimeout(timeoutId)
-    }
-  }, [isTranscribing])
+  }, [session.messages.length, isTranscribing]) // Added isTranscribing dependency
 
   const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -97,16 +79,27 @@ export function ChatView({ session, onTranscribe, isTranscribing }: ChatViewProp
   }
 
   const handleStartRecording = async () => {
-    setShowRecorder(true)
-    await startRecording()
+    try {
+      setShowRecorder(true)
+      await startRecording()
+    } catch (error) {
+      console.error("Error starting recording:", error)
+      toast.error("Errore nell'avvio della registrazione")
+      setShowRecorder(false)
+    }
   }
 
   const handleStopRecording = async () => {
-    const file = await stopRecording()
-    if (file) {
-      setRecordedFile(file)
-      const url = URL.createObjectURL(file)
-      setAudioUrl(url)
+    try {
+      const file = await stopRecording()
+      if (file) {
+        setRecordedFile(file)
+        const url = URL.createObjectURL(file)
+        setAudioUrl(url)
+      }
+    } catch (error) {
+      console.error("Error stopping recording:", error)
+      toast.error("Errore nell'arresto della registrazione")
     }
   }
 
@@ -115,16 +108,27 @@ export function ChatView({ session, onTranscribe, isTranscribing }: ChatViewProp
 
     if (!audioElement) {
       const audio = new Audio(audioUrl)
+      audio.crossOrigin = "anonymous" // Added for CORS compatibility
       audio.onended = () => setIsPlaying(false)
       audio.onplay = () => setIsPlaying(true)
       audio.onpause = () => setIsPlaying(false)
+      audio.onerror = (e) => {
+        console.error("Audio playback error:", e)
+        toast.error("Errore nella riproduzione audio")
+      }
       setAudioElement(audio)
-      audio.play()
+      audio.play().catch((e) => {
+        console.error("Audio play error:", e)
+        toast.error("Errore nella riproduzione audio")
+      })
     } else {
       if (isPlaying) {
         audioElement.pause()
       } else {
-        audioElement.play()
+        audioElement.play().catch((e) => {
+          console.error("Audio play error:", e)
+          toast.error("Errore nella riproduzione audio")
+        })
       }
     }
   }
@@ -162,6 +166,18 @@ export function ChatView({ session, onTranscribe, isTranscribing }: ChatViewProp
     setSelectedFile(null)
   }
 
+  useEffect(() => {
+    return () => {
+      if (audioElement) {
+        audioElement.pause()
+        audioElement.src = ""
+      }
+      if (audioUrl) {
+        URL.revokeObjectURL(audioUrl)
+      }
+    }
+  }, [audioElement, audioUrl])
+
   return (
     <div className="h-full flex flex-col">
       <ScrollArea ref={scrollAreaRef} className="flex-1 p-4 smooth-scroll">
@@ -176,15 +192,15 @@ export function ChatView({ session, onTranscribe, isTranscribing }: ChatViewProp
               <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
                 <Loader2 className="w-4 h-4 text-white animate-spin" />
               </div>
-              <div className="max-w-[80%] rounded-2xl p-4 bg-gray-100 text-gray-900 border border-gray-200 ml-4">   
-                  <div className="flex items-center gap-2">
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    <span>Trascrizione in corso...</span>
-                  </div>
+              <div className="max-w-[80%] rounded-2xl p-4 bg-gray-100 text-gray-900 border border-gray-200 ml-4">
+                <div className="flex items-center gap-2">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>Trascrizione in corso...</span>
+                </div>
               </div>
             </div>
           )}
-          
+
           <div ref={messagesEndRef} className="h-4" />
         </div>
       </ScrollArea>
@@ -207,21 +223,25 @@ export function ChatView({ session, onTranscribe, isTranscribing }: ChatViewProp
                     </div>
                   </div>
                   <div className="flex gap-2 justify-center">
-                    <Button 
-                      onClick={handlePlayPause} 
-                      variant="outline" 
-                      size="sm" 
+                    <Button
+                      onClick={handlePlayPause}
+                      variant="outline"
+                      size="sm"
                       className="bg-transparent py-[18px] rounded-full hover:gap-2 gap-0 transition-all duration-300 overflow-hidden group border hover:bg-gradient-to-br hover:from-green-100 hover:to-blue-100 "
                     >
-                      {isPlaying ? <Pause className="w-4 h-4 flex-shrink-0" /> : <Play className="w-4 h-4 flex-shrink-0" />}
+                      {isPlaying ? (
+                        <Pause className="w-4 h-4 flex-shrink-0" />
+                      ) : (
+                        <Play className="w-4 h-4 flex-shrink-0" />
+                      )}
                       <span className="max-w-0 group-hover:max-w-20 transition-all duration-300 overflow-hidden whitespace-nowrap opacity-0 group-hover:opacity-100">
                         {isPlaying ? "Pausa" : "Riproduci"}
                       </span>
                     </Button>
-                    <Button 
-                      onClick={handleResetRecording} 
-                      variant="outline" 
-                      size="sm" 
+                    <Button
+                      onClick={handleResetRecording}
+                      variant="outline"
+                      size="sm"
                       className="py-[18px] bg-transparent rounded-full hover:bg-gradient-to-br hover:from-green-100 hover:to-blue-100 hover:gap-2 gap-0 transition-all duration-300 overflow-hidden group"
                     >
                       <RotateCcw className="w-4 h-4 flex-shrink-0" />
@@ -257,12 +277,13 @@ export function ChatView({ session, onTranscribe, isTranscribing }: ChatViewProp
                     {/* Recording indicator */}
                     <div className="flex items-center gap-3">
                       <div
-                        className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 ${isRecording
+                        className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 ${
+                          isRecording
                             ? isPaused
                               ? "bg-gradient-to-br from-yellow-400 to-orange-500 animate-pulse"
                               : "bg-gradient-to-br from-red-500 to-pink-600 animate-pulse"
                             : "bg-gradient-to-br from-blue-500 to-purple-600"
-                          }`}
+                        }`}
                       >
                         <Mic className="w-5 h-5 text-white" />
                       </div>
@@ -295,9 +316,9 @@ export function ChatView({ session, onTranscribe, isTranscribing }: ChatViewProp
                             Annulla
                           </span>
                         </Button>
-                        <Button 
-                          onClick={startRecording} 
-                          size="sm" 
+                        <Button
+                          onClick={startRecording}
+                          size="sm"
                           className="py-[18px] rounded-full bg-blue-600 hover:bg-blue-700 hover:gap-2 gap-0 transition-all duration-300 overflow-hidden group "
                         >
                           <Mic className="w-4 h-4 flex-shrink-0" />
@@ -330,9 +351,9 @@ export function ChatView({ session, onTranscribe, isTranscribing }: ChatViewProp
                             </>
                           )}
                         </Button>
-                        <Button 
-                          onClick={handleStopRecording} 
-                          size="sm" 
+                        <Button
+                          onClick={handleStopRecording}
+                          size="sm"
                           className="py-[18px] rounded-full bg-red-600 hover:bg-red-700 hover:gap-2 gap-0 transition-all duration-300 overflow-hidden group "
                         >
                           <Square className="w-4 h-4 flex-shrink-0" />
@@ -363,10 +384,10 @@ export function ChatView({ session, onTranscribe, isTranscribing }: ChatViewProp
                   </div>
                 </div>
                 <div className="flex gap-2">
-                  <Button 
-                    onClick={handleRemoveFile} 
-                    variant="outline" 
-                    size="sm" 
+                  <Button
+                    onClick={handleRemoveFile}
+                    variant="outline"
+                    size="sm"
                     className="py-[18px] rounded-full bg-transparent hover:gap-2 gap-0 transition-all duration-300 overflow-hidden group bg-gradient-to-br hover:from-yellow-200 hover:to-orange-300 "
                   >
                     <X className="w-4 h-4 flex-shrink-0" />
