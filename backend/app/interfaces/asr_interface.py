@@ -6,7 +6,7 @@ seguendo il principio di Dependency Inversion dei SOLID principles.
 """
 
 from abc import ABC, abstractmethod
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 
 
 class ASRServiceInterface(ABC):
@@ -27,6 +27,31 @@ class ASRServiceInterface(ABC):
 
         Returns:
             Stringa contenente la trascrizione dell'audio.
+
+        Raises:
+            Exception: Se si verifica un errore durante la trascrizione.
+        """
+        pass
+
+    @abstractmethod
+    async def transcribe_with_metrics(
+        self, 
+        audio_bytes: bytes, 
+        reference_text: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """
+        Trascrivi audio bytes in testo e calcola metriche di valutazione.
+
+        Args:
+            audio_bytes: Array di bytes contenente l'audio da trascrivere.
+            reference_text: Testo di riferimento per calcolo WER/CER (opzionale).
+
+        Returns:
+            Dizionario contenente:
+            - text: Trascrizione dell'audio
+            - inference_time: Tempo di inferenza in secondi
+            - metrics: Metriche WER, CER se reference_text è fornito
+            - model_info: Informazioni sul modello utilizzato
 
         Raises:
             Exception: Se si verifica un errore durante la trascrizione.

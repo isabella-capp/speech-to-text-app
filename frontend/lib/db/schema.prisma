@@ -20,6 +20,7 @@ model User {
   Authenticator Authenticator[] // Optional for WebAuthn support
   chats         Chat[]
   transcriptions Transcription[]
+  evaluations    Evaluation[]
 
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
@@ -104,7 +105,7 @@ model Message {
   type      MessageType @default(TRANSCRIPTION)
   chatId    String
   chat      Chat        @relation(fields: [chatId], references: [id], onDelete: Cascade)
-
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -123,4 +124,42 @@ model Transcription {
 
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
+}
+
+model Evaluation {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  audioName       String?
+  audioPath       String
+  audioDurationMs Int?
+
+   winner String // "Whisper" o "Wav2Vec2"
+    winnerScore Int // WER del vincitore
+    improvement Int // Miglioramento relativo in WER tra i due modelli
+
+  groundTruthText String   // trascrizione corretta fornita dall’utente
+
+  models          ModelResult[] // 1-N: risultati dei modelli su questo audio
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model ModelResult {
+  id                 String       @id @default(cuid())
+  evaluationId       String
+  evaluation         Evaluation   @relation(fields: [evaluationId], references: [id], onDelete: Cascade)
+
+  modelName          String       // es. "Whisper", "Wav2Vec2"
+  transcription      String
+  wordErrorRate      Float?
+  characterErrorRate Float?
+  accuracy           Float?
+  literalSimilarity  Float?
+  processingTimeMs   Int?
+
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
 }

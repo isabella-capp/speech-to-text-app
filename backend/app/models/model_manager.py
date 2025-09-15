@@ -65,13 +65,6 @@ class ASRModelManager:
                 "size": "grande",
                 "language": "it"
             },
-            "lightweight": {
-                "name": "leandroreturns/wav2vec2-xlsr-italian",
-                "description": "Modello più leggero per l'italiano",
-                "quality": "medio",
-                "size": "medio",
-                "language": "it"
-            }
         }
 
     def _initialize_whisper_models(self) -> Dict[ModelSize, Dict[str, Any]]:

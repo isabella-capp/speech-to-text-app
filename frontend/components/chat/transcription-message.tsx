@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge"
 import { Copy, Download, FileAudio, User, AudioWaveformIcon as Waveform } from "lucide-react"
 import type { TranscriptionMessage as TMessage } from "@/types/transcription"
 import { toast } from "sonner"
+import { useSession } from "next-auth/react"
 
 interface TranscriptionMessageProps {
   message: TMessage
@@ -12,6 +13,8 @@ interface TranscriptionMessageProps {
 }
 
 export function TranscriptionMessage({ message, sessionTitle }: TranscriptionMessageProps) {
+  const { data: session } = useSession()
+
 
   const copyTranscription = (text: string) => {
     navigator.clipboard.writeText(text)
@@ -32,7 +35,7 @@ export function TranscriptionMessage({ message, sessionTitle }: TranscriptionMes
 
   return (
     <div className={`flex gap-4 ${message.type === "USER" ? "justify-end" : "justify-start"}`}>
-      {message.type === "ASSISTANT" && (
+      {message.type === "TRANSCRIPTION" && (
         <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
           <Waveform className="w-4 h-4 text-white" />
         </div>
@@ -58,7 +61,7 @@ export function TranscriptionMessage({ message, sessionTitle }: TranscriptionMes
           </div>
         )}
         <p className="whitespace-pre-wrap">{message.content}</p>
-        {message.type === "ASSISTANT" && (
+        {message.type === "TRANSCRIPTION" && (
           <div className="flex gap-2 mt-3 pt-3 border-t border-gray-200">
             <Button onClick={() => copyTranscription(message.content)} variant="ghost" size="sm" className="gap-2 h-8 hover:bg-gray-200/50 rounded-lg">
               <Copy className="w-3 h-3" />
@@ -77,10 +80,21 @@ export function TranscriptionMessage({ message, sessionTitle }: TranscriptionMes
         )}
       </div>
       {message.type === "USER" && (
-        <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
-          <User className="w-4 h-4 text-white" />
-        </div>
+        session?.user?.image ? (
+          <div className="w-8 h-8 rounded-full overflow-hidden bg-black flex items-center justify-center">
+            <img
+              src={session.user.image || "/placeholder.svg"}
+              alt="User avatar"
+              className="w-full h-full object-cover"
+            />
+          </div>
+        ) : (
+          <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
+            <User className="w-4 h-4 text-white" />
+          </div>
+        )
       )}
     </div>
   )
 }
+

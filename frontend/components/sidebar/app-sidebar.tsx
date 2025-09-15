@@ -25,7 +25,13 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu"
 import {
   Plus,
   Search,
@@ -33,10 +39,11 @@ import {
   User,
   Settings,
   MessageSquare,
-  AudioWaveformIcon as Waveform,
+  AudioWaveform as Waveform,
   Trash2,
   AudioLines,
   LogOut,
+  BarChart3,
 } from "lucide-react"
 import type { TranscriptionChat } from "@/types/transcription"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
@@ -45,6 +52,7 @@ import { logoutAction } from "@/lib/auth-actions"
 import { useSession } from "next-auth/react"
 import { DropdownMenuLabel } from "@radix-ui/react-dropdown-menu"
 import { redirect } from "next/navigation"
+import Link from "next/link" // Added Link import for navigation
 
 interface AppSidebarProps {
   chats: TranscriptionChat[]
@@ -57,7 +65,6 @@ interface AppSidebarProps {
 export function AppSidebar({ chats, onDeleteSession, onClearAllSessions, onNewSession }: AppSidebarProps) {
   const session = useSession()
 
-  console.log("chats", chats)
   const [searchQuery, setSearchQuery] = useState("")
   const [showSearchDialog, setShowSearchDialog] = useState(false)
   const [showTriggerOnHover, setShowTriggerOnHover] = useState(false)
@@ -68,7 +75,7 @@ export function AppSidebar({ chats, onDeleteSession, onClearAllSessions, onNewSe
       chat.messages.some((msg) => msg.content.toLowerCase().includes(searchQuery.toLowerCase())),
   )
 
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false)
 
   return (
     <Sidebar collapsible="icon" className="border-r">
@@ -83,9 +90,7 @@ export function AppSidebar({ chats, onDeleteSession, onClearAllSessions, onNewSe
               {isCollapsed && showTriggerOnHover ? (
                 <div className="w-8 h-8">
                   <div className="w-4 h-4 p-1 bg-[#f0f2f4]/50 rounded-lg">
-                    <SidebarTrigger
-                      onClick={() => setIsCollapsed(!isCollapsed)}
-                    />
+                    <SidebarTrigger onClick={() => setIsCollapsed(!isCollapsed)} />
                   </div>
                 </div>
               ) : (
@@ -95,16 +100,14 @@ export function AppSidebar({ chats, onDeleteSession, onClearAllSessions, onNewSe
               )}
             </div>
 
-            <span className="font-semibold text-lg group-data-[collapsible=icon]:hidden">
-              SpeechGPT
-            </span>
+            <span className="font-semibold text-lg group-data-[collapsible=icon]:hidden">SpeechGPT</span>
           </div>
 
           {/* SidebarTrigger visibile solo se sidebar NON collassata */}
-          <SidebarTrigger className="group-data-[collapsible=icon]:hidden"
+          <SidebarTrigger
+            className="group-data-[collapsible=icon]:hidden"
             onClick={() => setIsCollapsed(!isCollapsed)}
           />
-
         </div>
 
         <Button
@@ -113,7 +116,7 @@ export function AppSidebar({ chats, onDeleteSession, onClearAllSessions, onNewSe
             "group-data-[collapsible=icon]:w-8 group-data-[collapsible=icon]:h-8",
             "group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:justify-center",
             "group-data-[collapsible=icon]:rounded-lg",
-            "w-full justify-start gap-2 p-5"
+            "w-full justify-start gap-2 p-5",
           )}
           onClick={onNewSession}
           title="Nuova Trascrizione"
@@ -122,13 +125,29 @@ export function AppSidebar({ chats, onDeleteSession, onClearAllSessions, onNewSe
           <span className="group-data-[collapsible=icon]:hidden">Nuova Trascrizione</span>
         </Button>
 
+        <Link href="/transcribe/evaluate">
+          <Button
+            className={cn(
+              "bg-transparent shadow-white text-black hover:bg-[#f0f2f4]/50",
+              "group-data-[collapsible=icon]:w-8 group-data-[collapsible=icon]:h-8",
+              "group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:justify-center",
+              "group-data-[collapsible=icon]:rounded-lg",
+              "w-full justify-start gap-2 p-5",
+            )}
+            title="Valuta Modelli"
+          >
+            <BarChart3 className="w-4 h-4 group-data-[collapsible=icon]:w-5 group-data-[collapsible=icon]:h-5" />
+            <span className="group-data-[collapsible=icon]:hidden">Valuta Modelli</span>
+          </Button>
+        </Link>
+
         <Button
           className={cn(
             "bg-transparent shadow-white text-black hover:bg-[#f0f2f4]/50",
             "group-data-[collapsible=icon]:w-8 group-data-[collapsible=icon]:h-8",
             "group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:justify-center",
             "group-data-[collapsible=icon]:rounded-lg",
-            "w-full justify-start gap-2 p-5"
+            "w-full justify-start gap-2 p-5",
           )}
           onClick={() => setShowSearchDialog(true)}
           title="Cerca trascrizioni"
@@ -160,7 +179,9 @@ export function AppSidebar({ chats, onDeleteSession, onClearAllSessions, onNewSe
                       <div className="flex-1 min-w-0">
                         <div className="truncate font-medium">{chat.title}</div>
                         <div className="text-xs text-gray-500 truncate">
-                          {chat.createdAt ? new Date(chat.createdAt).toLocaleDateString("it-IT") : "Data non disponibile"}
+                          {chat.createdAt
+                            ? new Date(chat.createdAt).toLocaleDateString("it-IT")
+                            : "Data non disponibile"}
                         </div>
                       </div>
                     </SidebarMenuButton>
@@ -198,14 +219,14 @@ export function AppSidebar({ chats, onDeleteSession, onClearAllSessions, onNewSe
                 "group-data-[collapsible=icon]:w-8 group-data-[collapsible=icon]:h-8",
                 "group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:justify-center",
                 "group-data-[collapsible=icon]:rounded-lg",
-                "w-full justify-start gap-3 p-5"
+                "w-full justify-start gap-3 p-5",
               )}
               title="Menu utente"
             >
               <div className="w-6 h-6 rounded-full overflow-hidden bg-black flex items-center justify-center">
                 {session?.data?.user?.image ? (
                   <img
-                    src={session.data.user.image}
+                    src={session.data.user.image || "/placeholder.svg"}
                     alt="User avatar"
                     className="w-full h-full object-cover"
                   />
@@ -220,13 +241,17 @@ export function AppSidebar({ chats, onDeleteSession, onClearAllSessions, onNewSe
           <DropdownMenuContent align="start" className="w-56">
             <DropdownMenuLabel className="flex flex-row items-center gap-2 px-2 py-2">
               <User className="w-4 h-4 text-gray-400" />
-              <span className="text-sm text-gray-400 truncate">
-                {session?.data?.user?.email || "Non disponibile"}
-              </span>
+              <span className="text-sm text-gray-400 truncate">{session?.data?.user?.email || "Non disponibile"}</span>
             </DropdownMenuLabel>
             <DropdownMenuItem>
               <Settings className="w-4 h-4 mr-2" />
               Impostazioni
+            </DropdownMenuItem>
+            <DropdownMenuItem>
+               <Link href="/transcribe/evaluate/dashboard" className="flex flex-row">
+                  <BarChart3 className="w-4 h-4 mr-2" />
+                  Dashboard Metriche
+               </Link>
             </DropdownMenuItem>
             {chats.length > 0 && (
               <AlertDialog>

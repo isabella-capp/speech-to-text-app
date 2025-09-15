@@ -1,7 +1,7 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { LogIn, Plus } from "lucide-react"
+import { LogIn, Plus, BarChart3 } from "lucide-react"
 import { ModelSelector } from "./model-selector"
 import { useModel } from "@/lib/providers/model-provider"
 import { useState } from "react"
@@ -21,6 +21,8 @@ export default function TranscribeHeader({ guestMode, isTranscribing, onNewChat 
   const [showModelSelector, setShowModelSelector] = useState(false)
   
   const isInChat = pathname.includes("/chat/")
+  const isInEvaluate = pathname.includes("/evaluate")
+  const isInDashboard = pathname.includes("/evaluate/dashboard")
 
   return (
     <header className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-10">
@@ -62,6 +64,28 @@ export default function TranscribeHeader({ guestMode, isTranscribing, onNewChat 
             >
               <Plus className="w-4 h-4" />
               Nuova
+            </Button>
+          )}
+          {isInEvaluate && !isInDashboard && (
+            <Button
+              onClick={() => router.push("/transcribe/evaluate/dashboard")}
+              variant="outline"
+              size="sm"
+              className="gap-2 bg-transparent rounded-full"
+            >
+              <BarChart3 className="w-4 h-4" />
+              Dashboard
+            </Button>
+          )}
+          {isInDashboard && (
+            <Button
+              onClick={() => router.push("/transcribe/evaluate")}
+              variant="outline"
+              size="sm"
+              className="gap-2 bg-transparent rounded-full"
+            >
+              <Plus className="w-4 h-4" />
+              Nuova Valutazione
             </Button>
           )}
         </div>

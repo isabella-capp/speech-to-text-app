@@ -7,13 +7,15 @@ utilizzando modelli Wav2Vec2 di Hugging Face.
 
 import torch
 import torchaudio
+import time
 from transformers import Wav2Vec2ForCTC, Wav2Vec2Processor
 import numpy as np
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 
 from app.interfaces.asr_interface import ASRServiceInterface
 from app.utils.audio_utils import decode_bytes_to_float32
 from app.models.model_manager import ASRModelManager
+from app.utils.metrics import calculate_detailed_metrics
 
 
 class Wav2Vec2Service(ASRServiceInterface):
@@ -169,6 +171,94 @@ class Wav2Vec2Service(ASRServiceInterface):
                 return "Nessun audio rilevato o audio non comprensibile."
                 
             return result
+        except Exception as e:
+            print(f"Transcription error: {e}")
+            raise Exception(f"Errore durante la trascrizione: {str(e)}")
+
+    async def transcribe_with_metrics(
+        self, 
+        audio_bytes: bytes, 
+        reference_text: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """
+        Trascrivi audio bytes in testo e calcola metriche di valutazione.
+
+        Args:
+            audio_bytes: Array di bytes contenente l'audio da trascrivere.
+            reference_text: Testo di riferimento per calcolo WER/CER (opzionale).
+
+        Returns:
+            Dizionario contenente:
+            - text: Trascrizione dell'audio
+            - inference_time: Tempo di inferenza in secondi
+            - metrics: Metriche WER, CER se reference_text è fornito
+            - model_info: Informazioni sul modello utilizzato
+
+        Raises:
+            Exception: Se si verifica un errore durante la trascrizione.
+        """
+        try:
+            self._load_model()
+            
+            print(f"Processing {len(audio_bytes)} bytes of audio data")
+            
+            # Misura il tempo di inferenza
+            start_time = time.perf_counter()
+            
+            pcm, sr = decode_bytes_to_float32(audio_bytes)
+            print(f"Decoded audio: {len(pcm)} samples at {sr}Hz")
+            
+            # Normalizza l'audio
+            pcm = self._normalize_audio(pcm)
+            
+            # Resample a 16kHz se necessario
+            pcm = self._resample_audio(pcm, sr)
+
+            # Processa con il modello
+            inputs = self.processor(
+                pcm, 
+                sampling_rate=16000, 
+                return_tensors="pt", 
+                padding=True,
+                do_normalize=True
+            )
+            inputs = {k: v.to(self.device) for k, v in inputs.items()}
+
+            with torch.no_grad():
+                logits = self.model(**inputs).logits
+
+            predicted_ids = torch.argmax(logits, dim=-1)
+            transcription = self.processor.decode(predicted_ids[0])
+            
+            # Post-processing
+            result = self._postprocess_transcription(transcription)
+            
+            # Fine misurazione tempo
+            end_time = time.perf_counter()
+            inference_time = end_time - start_time
+            
+            print(f"Transcription completed in {inference_time:.3f}s: '{result}'")
+            
+            # Verifica che ci sia effettivamente del testo
+            if not result or result.strip() == "":
+                print("Warning: Wav2Vec2 returned empty transcription")
+                result = "Nessun audio rilevato o audio non comprensibile."
+            
+            # Prepara la risposta
+            response = {
+                "text": result,
+                "inference_time": inference_time,
+                "model_info": self.get_model_info()
+            }
+            
+            # Calcola metriche se fornito il testo di riferimento
+            if reference_text:
+                metrics = calculate_detailed_metrics(reference_text, result)
+                response["metrics"] = metrics
+                print(f"Metrics calculated - WER: {metrics['wer']:.3f}, CER: {metrics['cer']:.3f}")
+            
+            return response
+            
         except Exception as e:
             print(f"Transcription error: {e}")
             raise Exception(f"Errore durante la trascrizione: {str(e)}")

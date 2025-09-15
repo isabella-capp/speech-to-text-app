@@ -33,7 +33,7 @@ Il backend refactorizzato dell'applicazione Speech-to-Text implementa un'archite
 ### Gestione Dinamica dei Modelli
 
 #### Wav2Vec2
-- **Modelli disponibili**: `facebook`, `jonatas`, `lightweight`
+- **Modelli disponibili**: `facebook`, `jonatas`
 - **Modello default**: `facebook` (facebook/wav2vec2-large-xlsr-53-italian)
 - **Cambio modello**: `POST /models/wav2vec2/update`
 
@@ -60,7 +60,7 @@ GET  /whisper/model-info         # Info modello Whisper corrente
 # Cambia a modello Wav2Vec2 leggero
 curl -X POST "http://localhost:8000/models/wav2vec2/update" \
      -H "Content-Type: application/json" \
-     -d '{"model_name": "lightweight"}'
+     -d '{"model_name": "jonatas"}'
 
 # Cambia a Whisper small
 curl -X POST "http://localhost:8000/models/whisper/update" \
