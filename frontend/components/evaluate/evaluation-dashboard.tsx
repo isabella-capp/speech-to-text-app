@@ -50,8 +50,8 @@ export function EvaluationDashboard() {
   const totalProcessingTime = allModels.reduce((sum, model) => sum + ((model.processingTimeMs || 0) / 1000), 0)
   
   // Calcola miglioramento medio
-  const avgImprovement = evaluations.length > 0 
-    ? evaluations.reduce((sum: number, e: Evaluation) => sum + e.comparison.improvement, 0) / evaluations.length 
+  const avgCER = allModels.length > 0
+    ? allModels.reduce((sum, model) => sum + (model.characterErrorRate || 0), 0) / allModels.length
     : 0
 
   // Calcola accuratezza media
@@ -156,6 +156,14 @@ export function EvaluationDashboard() {
                       </div>
                       <Progress value={avgAccuracy * 100} />
                     </div>
+ 
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span>Character Error Rate</span>
+                        <span>{(avgCER * 100).toFixed(1)}%</span>
+                      </div>
+                      <Progress value={avgCER * 100} />
+                    </div>
 
                     <div className="space-y-2">
                       <div className="flex justify-between text-sm">
@@ -165,13 +173,6 @@ export function EvaluationDashboard() {
                       <Progress value={avgAccuracy * 100} />
                     </div>
 
-                    <div className="space-y-2">
-                      <div className="flex justify-between text-sm">
-                        <span>Miglioramento Medio</span>
-                        <span>{(avgImprovement * 100).toFixed(1)}%</span>
-                      </div>
-                      <Progress value={avgImprovement * 100} />
-                    </div>
                   </CardContent>
                 </Card>
 
