@@ -2,30 +2,29 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts"
-import type { SavedEvaluation } from "@/types/evaluation"
-import { Whisper } from "next/font/google"
+import type { Evaluation, ModelResult } from "@/types/evaluation"
 
 interface EvaluationChartProps {
-  evaluations: SavedEvaluation[]
+  evaluations: Evaluation[]
 }
 
 export function EvaluationChart({ evaluations }: EvaluationChartProps) {
 
  // Prepara i dati per il grafico a barre (WER comparison)
   const werData = evaluations.slice(-10).map((evaluation, index) => {
-    const whisper = evaluation.models.find(m => m.model === "Whisper")
-    const wav2vec2 = evaluation.models.find(m => m.model === "Wav2Vec2")
+    const whisper = evaluation.models.find((m: ModelResult) => m.modelName === "whisper")
+    const wav2vec2 = evaluation.models.find((m: ModelResult) => m.modelName === "wav2vec2")
 
     return {
       name: `Test ${index + 1}`,
-      Whisper: whisper ? (1 - whisper.wer) * 100 : 0,
-      Wav2Vec2: wav2vec2 ? (1 - wav2vec2.wer) * 100 : 0,
+      Whisper: whisper ? (1 - (whisper.wordErrorRate || 0)) * 100 : 0,
+      Wav2Vec2: wav2vec2 ? (1 - (wav2vec2.wordErrorRate || 0)) * 100 : 0,
     }
   })
 
   // Prepara i dati per il grafico a torta (vittorie)
-  const whisperWins = evaluations.filter((e: SavedEvaluation) => e.winner === "Whisper").length
-  const wav2vec2Wins = evaluations.filter((e: SavedEvaluation) => e.winner === "Wav2Vec2").length
+  const whisperWins = evaluations.filter((e: Evaluation) => e.comparison.winner === "Whisper").length
+  const wav2vec2Wins = evaluations.filter((e: Evaluation) => e.comparison.winner === "Wav2Vec2").length
 
   const pieData = [
     { name: "Whisper", value: whisperWins, color: "#3b82f6" },

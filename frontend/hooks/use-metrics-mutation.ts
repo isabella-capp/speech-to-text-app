@@ -1,12 +1,12 @@
 import { useMutation } from "@tanstack/react-query"
 import { toast } from "sonner"
-import type { EvaluationRequest, EvaluationResult, ModelEvaluationResult } from "@/types/evaluation"
+import type { Evaluation, EvaluationRequest, ModelResult } from "@/types/evaluation"
 
-async function evaluateModelsApi(request: EvaluationRequest): Promise<EvaluationResult> {
+async function evaluateModelsApi(request: EvaluationRequest): Promise<Evaluation> {
   const formData = new FormData()
   formData.append("file", request.audioFile)
   formData.append("reference_text", request.correctTranscription)
-
+  console.log(request.audioFile)
   // Chiamate parallele ai due modelli
   const [whisperResponse, wav2vec2Response] = await Promise.all([
     fetch("/api/whisper/transcribe-with-metrics", { method: "POST", body: formData }),
@@ -40,36 +40,46 @@ async function evaluateModelsApi(request: EvaluationRequest): Promise<Evaluation
   const improvement = Math.abs(whisperWer - wav2vec2Wer) / Math.max(whisperWer, wav2vec2Wer)
 
   // Crea i risultati del modello
-  const whisperResult: ModelEvaluationResult = {
-    model: "whisper",
+  const whisperResult: ModelResult = {
+    modelName: "whisper",
+    accuracy: whisperData.metrics.accuracy,
+    wordErrorRate: whisperData.metrics.wer,
+    substitutions: whisperData.metrics.word_substitutions,
+    insertions: whisperData.metrics.word_insertions,
+    deletions: whisperData.metrics.word_deletions,
+    characterErrorRate: whisperData.metrics.cer,
+    literalSimilarity: whisperData.metrics.similarity_ratio,
+    processingTimeMs: whisperData.processingTime,
     transcription: whisperData.text,
-    wer: whisperWer,
-    substitutions: whisperMetrics.word_substitutions ?? 0,
-    insertions: whisperMetrics.word_insertions ?? 0,
-    deletions: whisperMetrics.word_deletions ?? 0,
-    processingTime: whisperData.inference_time ?? 0,
   }
 
-  const wav2vec2Result: ModelEvaluationResult = {
-    model: "wav2vec2",
+  const wav2vec2Result: ModelResult = {
+    modelName: "wav2vec2",
+    accuracy: wav2vec2Data.metrics.accuracy,
+    wordErrorRate: wav2vec2Data.metrics.wer,
+    substitutions: wav2vec2Data.metrics.word_substitutions,
+    insertions: wav2vec2Data.metrics.word_insertions,
+    deletions: wav2vec2Data.metrics.word_deletions,
+    characterErrorRate: wav2vec2Data.metrics.cer,
+    literalSimilarity: wav2vec2Data.metrics.similarity_ratio,
+    processingTimeMs: wav2vec2Data.processingTime,
     transcription: wav2vec2Data.text,
-    wer: wav2vec2Wer,
-    substitutions: wav2vec2Metrics.word_substitutions ?? 0,
-    insertions: wav2vec2Metrics.word_insertions ?? 0,
-    deletions: wav2vec2Metrics.word_deletions ?? 0,
-    processingTime: wav2vec2Data.inference_time ?? 0,
   }
 
-  const result: EvaluationResult = {
+  const result: Evaluation = {
     models: [whisperResult, wav2vec2Result],
+    groundTruthText: request.correctTranscription,
     comparison: {
       winner,
       winnerScore,
       improvement,
     },
-    correctTranscription: request.correctTranscription,
-    audioFileName: request.audioFile.name,
-    evaluatedAt: new Date().toISOString(),
+    audio: {
+      audioName: request.audioFile.name,
+      audioPath: URL.createObjectURL(request.audioFile), // Genera un URL temporaneo per il file
+      audioDurationMs: request.audioFile.size, // Nota: size è in bytes, non ms
+    },  
+    createdAt: new Date().toISOString(),
   }
 
   // Salva nel DB

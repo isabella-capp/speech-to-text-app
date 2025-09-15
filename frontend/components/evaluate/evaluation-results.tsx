@@ -5,16 +5,16 @@ import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Separator } from "@/components/ui/separator"
 import { Trophy, Clock } from "lucide-react"
-import type { EvaluationResult } from "@/types/evaluation"
+import type { Evaluation, ModelResult } from "@/types/evaluation"
 import { formatProcessingTime, formatWER } from "@/lib/format-utils"
 
 interface EvaluationResultsProps {
-  results: EvaluationResult
+  results: Evaluation
 }
 
 export function EvaluationResults({ results }: EvaluationResultsProps) {
-  const whisper = results.models.find(m => m.model === "Whisper")
-  const wav2vec2 = results.models.find(m => m.model === "Wav2Vec2")
+  const whisper = results.models.find((m: ModelResult) => m.modelName === "whisper")
+  const wav2vec2 = results.models.find((m: ModelResult) => m.modelName === "wav2vec2")
   const comparison = results.comparison
 
   // Se non abbiamo entrambi i modelli, mostra un messaggio di errore
@@ -69,16 +69,16 @@ export function EvaluationResults({ results }: EvaluationResultsProps) {
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
               <span>Whisper</span>
-              <Badge variant={getBadgeVariant(1 - whisper.wer)}>WER: {whisper.wer.toFixed(3)}</Badge>
+              <Badge variant={getBadgeVariant(1 - (whisper.wordErrorRate || 0))}>WER: {(whisper.wordErrorRate || 0).toFixed(3)}</Badge>
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
               <div className="flex justify-between text-sm mb-2">
                 <span>Accuratezza</span>
-                <span className={getScoreColor(1 - whisper.wer)}>{((1 - whisper.wer) * 100).toFixed(1)}%</span>
+                <span className={getScoreColor(1 - (whisper.wordErrorRate || 0))}>{((1 - (whisper.wordErrorRate || 0)) * 100).toFixed(1)}%</span>
               </div>
-              <Progress value={(1 - whisper.wer) * 100} className="h-2" />
+              <Progress value={(1 - (whisper.wordErrorRate || 0)) * 100} className="h-2" />
             </div>
 
             <Separator />
@@ -88,7 +88,7 @@ export function EvaluationResults({ results }: EvaluationResultsProps) {
                 <span>Tempo di elaborazione:</span>
                 <span className="flex items-center gap-1">
                   <Clock className="w-3 h-3" />
-                  {formatProcessingTime(whisper.processingTime)}
+                  {formatProcessingTime((whisper.processingTimeMs || 0) / 1000)}
                 </span>
               </div>
               <div className="flex justify-between">
@@ -119,16 +119,16 @@ export function EvaluationResults({ results }: EvaluationResultsProps) {
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
               <span>Wav2Vec2</span>
-              <Badge variant={getBadgeVariant(1 - wav2vec2.wer)}>WER: {wav2vec2.wer.toFixed(3)}</Badge>
+              <Badge variant={getBadgeVariant(1 - (wav2vec2.wordErrorRate || 0))}>WER: {(wav2vec2.wordErrorRate || 0).toFixed(3)}</Badge>
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
               <div className="flex justify-between text-sm mb-2">
                 <span>Accuratezza</span>
-                <span className={getScoreColor(1 - wav2vec2.wer)}>{((1 - wav2vec2.wer) * 100).toFixed(1)}%</span>
+                <span className={getScoreColor(1 - (wav2vec2.wordErrorRate || 0))}>{((1 - (wav2vec2.wordErrorRate || 0)) * 100).toFixed(1)}%</span>
               </div>
-              <Progress value={(1 - wav2vec2.wer) * 100} className="h-2" />
+              <Progress value={(1 - (wav2vec2.wordErrorRate || 0)) * 100} className="h-2" />
             </div>
 
             <Separator />
@@ -138,7 +138,7 @@ export function EvaluationResults({ results }: EvaluationResultsProps) {
                 <span>Tempo di elaborazione:</span>
                 <span className="flex items-center gap-1">
                   <Clock className="w-3 h-3" />
-                  {formatProcessingTime(wav2vec2.processingTime)}
+                  {formatProcessingTime((wav2vec2.processingTimeMs || 0) / 1000)}
                 </span>
               </div>
               <div className="flex justify-between">
@@ -174,12 +174,12 @@ export function EvaluationResults({ results }: EvaluationResultsProps) {
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
             <div className="space-y-2">
-              <div className="text-2xl font-bold text-blue-600">{Math.abs(whisper.wer - wav2vec2.wer).toFixed(3)}</div>
+              <div className="text-2xl font-bold text-blue-600">{Math.abs((whisper.wordErrorRate || 0) - (wav2vec2.wordErrorRate || 0)).toFixed(3)}</div>
               <div className="text-sm text-gray-500">Differenza WER</div>
             </div>
             <div className="space-y-2">
               <div className="text-2xl font-bold text-green-600">
-                {formatProcessingTime(Math.abs(whisper.processingTime - wav2vec2.processingTime))}
+                {formatProcessingTime(Math.abs(((whisper.processingTimeMs || 0) / 1000) - ((wav2vec2.processingTimeMs || 0) / 1000)))}
               </div>
               <div className="text-sm text-gray-500">Differenza Tempo</div>
             </div>

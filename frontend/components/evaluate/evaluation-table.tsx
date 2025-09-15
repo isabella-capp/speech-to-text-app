@@ -2,105 +2,94 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Trophy, Clock, FileAudio } from "lucide-react"
-import type { SavedEvaluation } from "@/types/evaluation"
-import { formatProcessingTime, formatWER } from "@/lib/format-utils"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import type { Evaluation } from "@/types/evaluation"
 
 interface EvaluationTableProps {
-  evaluations: SavedEvaluation[]
+  evaluations: Evaluation[]
 }
 
 export function EvaluationTable({ evaluations }: EvaluationTableProps) {
-  const getBadgeVariant = (score: number) => {
-    if (score < 0.1) return "default"
-    if (score < 0.3) return "secondary"
-    return "destructive"
+  
+  const formatPercentage = (value?: number) => {
+    if (value === undefined || value === null) return "N/A"
+    return `${(value * 100).toFixed(1)}%`
   }
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("it-IT", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    })
+  const getScoreColor = (value?: number, isError = false) => {
+    if (value === undefined || value === null) return "secondary"
+
+    if (isError) {
+      // For error rates, lower is better
+      if (value < 0.1) return "default"
+      if (value < 0.3) return "secondary"
+      return "destructive"
+    } else {
+      // For similarity/BLEU scores, higher is better
+      if (value > 0.8) return "default"
+      if (value > 0.5) return "secondary"
+      return "destructive"
+    }
   }
+  console.log("Evaluations data:", evaluations)
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Cronologia Valutazioni</CardTitle>
+        <CardTitle>Dettaglio Trascrizioni Valutate</CardTitle>
       </CardHeader>
       <CardContent>
-        <ScrollArea className="h-96">
-          <div className="space-y-4">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Data</TableHead>
+              <TableHead>Modello</TableHead>
+              <TableHead>WER</TableHead>
+              <TableHead>CER</TableHead>
+              <TableHead>Similarità</TableHead>
+              <TableHead>Trascrizione</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {evaluations.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
-                <FileAudio className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                <p className="text-sm">Nessuna valutazione disponibile</p>
-              </div>
+              <TableRow>
+                <TableCell colSpan={7} className="text-center text-gray-500 py-8">
+                  Nessuna valutazione disponibile. Inizia a valutare le tue trascrizioni per vedere i dati qui.
+                </TableCell>
+              </TableRow>
             ) : (
-              evaluations.map((evaluation) => (
-                <div key={evaluation.id} className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex-1 min-w-0">
-                      <h4 className="font-medium truncate">{evaluation.audioFileName}</h4>
-                      <p className="text-xs text-gray-500">{formatDate(evaluation.createdAt)}</p>
-                    </div>
-                    <div className="flex items-center gap-2 ml-4">
-                      <Badge variant={getBadgeVariant(evaluation.winnerScore)}>
-                        WER: {evaluation.winnerScore.toFixed(3)}
+              evaluations.flatMap((evaluation) => 
+                evaluation.models.map((modelResult, index) => (
+                  <TableRow key={`${evaluation.createdAt}-${modelResult.modelName}-${index}`}>
+                    <TableCell className="text-sm">
+                      {new Date(evaluation.createdAt).toLocaleDateString()}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline">{modelResult.modelName}</Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={getScoreColor(modelResult.wordErrorRate ? modelResult.wordErrorRate / 100 : undefined, true)}>
+                        {modelResult.wordErrorRate ? `${(modelResult.wordErrorRate * 100).toFixed(1)}%` : "N/A"}
                       </Badge>
-                      <Badge variant="outline" className="flex items-center gap-1">
-                        <Trophy className="w-3 h-3" />
-                        {evaluation.winner}
-                      </Badge>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div className="space-y-1">
-                      <div className="flex justify-between">
-                        <span className="text-blue-600 font-medium">Whisper:</span>
-                        <span>{formatWER(1 - (evaluation.models.find(m => m.model === "Whisper")?.wer ?? 1))}</span>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="secondary">{modelResult.characterErrorRate ? `${(modelResult.characterErrorRate * 100).toFixed(1)}%` : "N/A"}</Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="secondary">{modelResult.literalSimilarity ? `${(modelResult.literalSimilarity * 100).toFixed(1)}%` : "N/A"}</Badge>
+                    </TableCell>
+                    <TableCell className="max-w-xs">
+                      <div className="truncate text-sm text-gray-600">
+                        {modelResult.transcription.substring(0, 50)}
+                        {modelResult.transcription.length > 50 && "..."}
                       </div>
-                      <div className="flex justify-between text-xs text-gray-500">
-                        <span>Tempo:</span>
-                        <span className="flex items-center gap-1">
-                          <Clock className="w-3 h-3" />
-                          {formatProcessingTime(evaluation.models.find(m => m.model === "Whisper")?.processingTime ?? 0)}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="space-y-1">
-                      <div className="flex justify-between">
-                        <span className="text-purple-600 font-medium">Wav2Vec2:</span>
-                        <span>{formatWER(1 - (evaluation.models.find(m => m.model === "Wav2Vec2")?.wer ?? 1))}</span>
-                      </div>
-                      <div className="flex justify-between text-xs text-gray-500">
-                        <span>Tempo:</span>
-                        <span className="flex items-center gap-1">
-                          <Clock className="w-3 h-3" />
-                          {formatProcessingTime(evaluation.models.find(m => m.model === "Wav2Vec2")?.processingTime ?? 0)}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="mt-3 pt-3 border-t">
-                    <div className="flex justify-between items-center text-xs">
-                      <span className="text-gray-500">Miglioramento:</span>
-                      <span className="font-medium text-green-600">+{(evaluation.improvement * 100).toFixed(1)}%</span>
-                    </div>
-                  </div>
-                </div>
-              ))
+                    </TableCell>
+                  </TableRow>
+                ))
+              )
             )}
-          </div>
-        </ScrollArea>
+          </TableBody>
+        </Table>
       </CardContent>
     </Card>
   )
