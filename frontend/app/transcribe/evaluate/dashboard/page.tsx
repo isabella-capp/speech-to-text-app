@@ -7,7 +7,7 @@ export default async function EvaluationDashboardPage() {
 
   if (!session?.user) {
     // Se l'utente non è autenticato, reindirizza alla pagina di login
-    redirect("/login")
+    redirect("/auth/login")
   }
   
   return <EvaluationDashboard />

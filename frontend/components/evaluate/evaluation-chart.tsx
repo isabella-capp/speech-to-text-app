@@ -33,7 +33,12 @@ export function EvaluationChart({ evaluations }: ImprovedEvaluationChartProps) {
 
     return {
       test: `Test ${index + 1}`,
-      date: new Date(evaluation.createdAt).toLocaleDateString("it-IT", { month: "short", day: "numeric" }),
+      date: new Date(evaluation.createdAt).toLocaleDateString("it-IT", { 
+        month: "short", 
+        day: "numeric", 
+        hour: "2-digit", 
+        minute: "2-digit" 
+      }),
       whisperWER: whisper ? (whisper.wordErrorRate || 0) * 100 : 0,
       wav2vec2WER: wav2vec2 ? (wav2vec2.wordErrorRate || 0) * 100 : 0,
     }
@@ -46,7 +51,12 @@ export function EvaluationChart({ evaluations }: ImprovedEvaluationChartProps) {
 
     return {
       test: `Test ${index + 1}`,
-      date: new Date(evaluation.createdAt).toLocaleDateString("it-IT", { month: "short", day: "numeric" }),
+      date: new Date(evaluation.createdAt).toLocaleDateString("it-IT", { 
+        month: "short", 
+        day: "numeric", 
+        hour: "2-digit", 
+        minute: "2-digit" 
+      }),
       whisperCER: whisper ? (whisper.characterErrorRate || 0) * 100 : 0,
       wav2vec2CER: wav2vec2 ? (wav2vec2.characterErrorRate || 0) * 100 : 0,
     }
@@ -58,9 +68,14 @@ export function EvaluationChart({ evaluations }: ImprovedEvaluationChartProps) {
 
     return {
       test: `Test ${index + 1}`,
-      date: new Date(evaluation.createdAt).toLocaleDateString("it-IT", { month: "short", day: "numeric" }),
-      whisperTime: whisper ? whisper.processingTimeMs || 0 : 0,
-      wav2vec2Time: wav2vec2 ? wav2vec2.processingTimeMs || 0 : 0,
+      date: new Date(evaluation.createdAt).toLocaleDateString("it-IT", { 
+        month: "short", 
+        day: "numeric", 
+        hour: "2-digit", 
+        minute: "2-digit" 
+      }),
+      whisperTime: whisper ? (whisper.processingTimeMs || 0) / 1000 : 0, // Convert ms to seconds
+      wav2vec2Time: wav2vec2 ? (wav2vec2.processingTimeMs || 0) / 1000 : 0, // Convert ms to seconds
     }
   })
 
@@ -80,20 +95,21 @@ export function EvaluationChart({ evaluations }: ImprovedEvaluationChartProps) {
   // Custom label render function for pie chart
   const renderCustomLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, name, value }: any) => {
     const RADIAN = Math.PI / 180
-    const radius = innerRadius + (outerRadius - innerRadius) * 0.5
+    // Position labels outside the pie chart
+    const radius = outerRadius + 30
     const x = cx + radius * Math.cos(-midAngle * RADIAN)
     const y = cy + radius * Math.sin(-midAngle * RADIAN)
     const percent = totalWins > 0 ? ((value / totalWins) * 100).toFixed(0) : 0
 
     return (
-      <text 
-        x={x} 
-        y={y} 
-        fill="white" 
-        textAnchor={x > cx ? 'start' : 'end'} 
+      <text
+        x={x}
+        y={y}
+        fill="#374151"
+        textAnchor={x > cx ? 'start' : 'end'}
         dominantBaseline="central"
         fontSize="12"
-        fontWeight="bold"
+        fontWeight="500"
       >
         {`${name}: ${value} (${percent}%)`}
       </text>
@@ -114,7 +130,12 @@ export function EvaluationChart({ evaluations }: ImprovedEvaluationChartProps) {
 
     return {
       test: `Test ${index + 1}`,
-      date: new Date(evaluation.createdAt).toLocaleDateString("it-IT", { month: "short", day: "numeric" }),
+      date: new Date(evaluation.createdAt).toLocaleDateString("it-IT", { 
+        month: "short", 
+        day: "numeric", 
+        hour: "2-digit", 
+        minute: "2-digit" 
+      }),
       whisperAccuracy: whisper ? (whisper.accuracy || 0) * 100 : 0,
       wav2vec2Accuracy: wav2vec2 ? (wav2vec2.accuracy || 0) * 100 : 0,
     }
@@ -293,12 +314,18 @@ export function EvaluationChart({ evaluations }: ImprovedEvaluationChartProps) {
               <XAxis dataKey="date" />
               <YAxis label={{ value: "WER (%)", angle: -90, position: "insideLeft" }} domain={[0, "dataMax + 1"]} />
               <Tooltip
-                formatter={(value: number, name: string) => [
-                  `${value.toFixed(1)}%`,
-                  name === "whisperWER" ? "Whisper" : "Wav2Vec2",
-                ]}
-                labelFormatter={(label) => `Data: ${label}`}
+                formatter={(value: any, name: string) => {
+                  if (typeof value === "number") {
+                    return [`${value.toFixed(1)}%`, name]
+                  }
+                  return [value, name]
+                }}
+                labelFormatter={(label: any) => (typeof label === "string" ? `Data: ${label}` : `Data: ${String(label)}`)}
+                cursor={{ stroke: '#8884d8', strokeWidth: 1 }}
+                allowEscapeViewBox={{ x: false, y: false }}
+                wrapperStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.95)', border: '1px solid #ccc', borderRadius: '4px' }}
               />
+
               <Legend />
               <Line
                 type="monotone"
@@ -333,12 +360,18 @@ export function EvaluationChart({ evaluations }: ImprovedEvaluationChartProps) {
               <XAxis dataKey="date" />
               <YAxis label={{ value: "CER (%)", angle: -90, position: "insideLeft" }} domain={[0, "dataMax + 1"]} />
               <Tooltip
-                formatter={(value: number, name: string) => [
-                  `${value.toFixed(1)}%`,
-                  name === "whisperCER" ? "Whisper" : "Wav2Vec2",
-                ]}
-                labelFormatter={(label) => `Data: ${label}`}
+                formatter={(value: any, name: string) => {
+                  if (typeof value === "number") {
+                    return [`${value.toFixed(1)}%`, name]
+                  }
+                  return [value, name]
+                }}
+                labelFormatter={(label: any) => (typeof label === "string" ? `Data: ${label}` : `Data: ${String(label)}`)}
+                cursor={{ stroke: '#8884d8', strokeWidth: 1 }}
+                allowEscapeViewBox={{ x: false, y: false }}
+                wrapperStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.95)', border: '1px solid #ccc', borderRadius: '4px' }}
               />
+
               <Legend />
               <Area
                 type="monotone"
@@ -375,12 +408,18 @@ export function EvaluationChart({ evaluations }: ImprovedEvaluationChartProps) {
                 <XAxis dataKey="date" />
                 <YAxis label={{ value: "Tempo (s)", angle: -90, position: "insideLeft" }} />
                 <Tooltip
-                  formatter={(value: number, name: string) => [
-                    `${value.toFixed(2)}s`,
-                    name === "whisperTime" ? "Whisper" : "Wav2Vec2",
-                  ]}
-                  labelFormatter={(label) => `Data: ${label}`}
+                  formatter={(value: any, name: string) => {
+                    if (typeof value === "number") {
+                      return [`${value.toFixed(2)}s`, name]
+                    }
+                    return [value, name]
+                  }}
+                  labelFormatter={(label: any) => (typeof label === "string" ? `Data: ${label}` : `Data: ${String(label)}`)}
+                  cursor={{ stroke: '#8884d8', strokeWidth: 1 }}
+                  allowEscapeViewBox={{ x: false, y: false }}
+                  wrapperStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.95)', border: '1px solid #ccc', borderRadius: '4px' }}
                 />
+
                 <Legend />
                 <Line
                   type="monotone"
@@ -442,11 +481,16 @@ export function EvaluationChart({ evaluations }: ImprovedEvaluationChartProps) {
               <XAxis dataKey="date" />
               <YAxis label={{ value: "Accuratezza (%)", angle: -90, position: "insideLeft" }} domain={[0, 100]} />
               <Tooltip
-                formatter={(value: number, name: string) => [
-                  `${value.toFixed(1)}%`,
-                  name === "whisperAccuracy" ? "Whisper" : "Wav2Vec2",
-                ]}
-                labelFormatter={(label) => `Data: ${label}`}
+                formatter={(value: any, name: string) => {
+                  if (typeof value === "number") {
+                    return [`${value.toFixed(1)}%`, name]
+                  }
+                  return [value, name]
+                }}
+                labelFormatter={(label: any) => (typeof label === "string" ? `Data: ${label}` : `Data: ${String(label)}`)}
+                cursor={{ fill: 'rgba(136, 132, 216, 0.1)' }}
+                allowEscapeViewBox={{ x: false, y: false }}
+                wrapperStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.95)', border: '1px solid #ccc', borderRadius: '4px' }}
               />
               <Legend />
               <Bar dataKey="whisperAccuracy" fill="#3b82f6" name="Whisper" radius={[4, 4, 0, 0]} />

@@ -137,7 +137,7 @@ model Evaluation {
 
    winner String // "Whisper" o "Wav2Vec2"
     winnerScore Int // WER del vincitore
-    improvement Int // Miglioramento relativo in WER tra i due modelli
+    improvement Int? // Miglioramento relativo in WER tra i due modelli (nullable)
 
   groundTruthText String   // trascrizione corretta fornita dall’utente
 
@@ -158,7 +158,7 @@ model ModelResult {
   characterErrorRate Float?
   accuracy           Float?
   literalSimilarity  Float?
-  processingTimeMs   Int?
+  processingTimeMs   Float?      // Cambiato da Int? a Float? per mantenere i decimali
 
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt

@@ -88,7 +88,10 @@ export async function POST(request: NextRequest) {
         audioDurationMs: result.audio.audioDurationMs,
         winner: result.comparison.winner,
         winnerScore: result.comparison.winnerScore,
-        improvement: result.comparison.improvement,
+        improvement: (result.comparison.improvement === null || 
+                     isNaN(result.comparison.improvement as number)) 
+          ? null 
+          : Math.round(result.comparison.improvement as number),
         groundTruthText: result.groundTruthText,
         models: {
           create: result.models.map((model: ModelResult) => ({

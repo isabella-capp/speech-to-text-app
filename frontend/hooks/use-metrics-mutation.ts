@@ -49,7 +49,7 @@ async function evaluateModelsApi(request: EvaluationRequest): Promise<Evaluation
     deletions: whisperData.metrics.word_deletions,
     characterErrorRate: whisperData.metrics.cer,
     literalSimilarity: whisperData.metrics.similarity_ratio,
-    processingTimeMs: whisperData.inference_time,
+    processingTimeMs: whisperData.inference_time * 1000, // Converti da secondi a millisecondi
     transcription: whisperData.text,
   }
 
@@ -62,7 +62,7 @@ async function evaluateModelsApi(request: EvaluationRequest): Promise<Evaluation
     deletions: wav2vec2Data.metrics.word_deletions,
     characterErrorRate: wav2vec2Data.metrics.cer,
     literalSimilarity: wav2vec2Data.metrics.similarity_ratio,
-    processingTimeMs: wav2vec2Data.inference_time,
+    processingTimeMs: wav2vec2Data.inference_time * 1000, // Converti da secondi a millisecondi
     transcription: wav2vec2Data.text,
   }
 
