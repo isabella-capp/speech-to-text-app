@@ -27,7 +27,7 @@ export interface Evaluation {
   createdAt: string;
   comparison: {
     winner: string; // "Whisper" o "Wav2Vec2"
-    winnerScore: number; // WER del vincitore
+    winnerScore: number; // Score calcolato come (1-WER)/Tempo
     improvement: number | null; // Miglioramento relativo in WER tra i due modelli (può essere null)
   };
   audio: {

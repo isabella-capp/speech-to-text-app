@@ -32,11 +32,18 @@ async function evaluateModelsApi(request: EvaluationRequest): Promise<Evaluation
   const whisperMetrics = whisperData.metrics || {}
   const wav2vec2Metrics = wav2vec2Data.metrics || {}
 
-  // Determina vincitore
+  // Determina vincitore con la nuova formula: Score = (1-WER)/Tempo
   const whisperWer = whisperMetrics.wer
   const wav2vec2Wer = wav2vec2Metrics.wer
-  const winner = whisperWer < wav2vec2Wer ? "Whisper" : "Wav2Vec2"
-  const winnerScore = Math.min(whisperWer, wav2vec2Wer)
+  const whisperTime = whisperData.inference_time
+  const wav2vec2Time = wav2vec2Data.inference_time
+  
+  // Calcola score per ogni modello: (1-WER)/Tempo
+  const whisperScore = (1 - whisperWer) / whisperTime
+  const wav2vec2Score = (1 - wav2vec2Wer) / wav2vec2Time
+  
+  const winner = whisperScore > wav2vec2Score ? "Whisper" : "Wav2Vec2"
+  const winnerScore = Math.max(whisperScore, wav2vec2Score)
   const improvement = Math.abs(whisperWer - wav2vec2Wer) / Math.max(whisperWer, wav2vec2Wer)
 
   // Crea i risultati del modello

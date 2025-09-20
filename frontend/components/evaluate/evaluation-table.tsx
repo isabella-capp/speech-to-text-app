@@ -53,24 +53,21 @@ export function EvaluationTable({ evaluations }: EvaluationTableProps) {
     setDialogOpen(true)
   }
 
-  const formatPercentage = (value?: number) => {
-    if (value === undefined || value === null) return "N/A"
-    return `${(value * 100).toFixed(1)}%`
-  }
 
   const getScoreColor = (value?: number, isError = false) => {
     if (value === undefined || value === null) return "secondary"
 
     if (isError) {
-      // For error rates, lower is better
-      if (value < 0.1) return "success"
-      if (value < 0.3) return "secondary"
-      return "destructive"
+      // For error rates (WER, CER), lower is better - 0% should be green
+      if (value <= 0) return "success" // Verde per 0% errori
+      if (value < 0.2) return "success" // Verde per <10% errori
+      if (value < 0.4) return "secondary" // Giallo per 10-30% errori
+      return "destructive" // Rosso per >30% errori
     } else {
-      // For similarity/BLEU scores, higher is better
-      if (value > 0.8) return "success"
-      if (value > 0.5) return "secondary"
-      return "destructive"
+      // For similarity/accuracy scores, higher is better
+      if (value >= 0.9) return "success" // Verde per >90%
+      if (value >= 0.7) return "secondary" // Giallo per 70-90%
+      return "destructive" // Rosso per <70%
     }
   }
   console.log("Evaluations data:", evaluations)
@@ -84,13 +81,13 @@ export function EvaluationTable({ evaluations }: EvaluationTableProps) {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Data</TableHead>
               <TableHead>Audio</TableHead>
-              <TableHead>Modello</TableHead>
-              <TableHead>WER</TableHead>
-              <TableHead>CER</TableHead>
-              <TableHead>Similarità</TableHead>
-              <TableHead>Accuratezza</TableHead>
+              <TableHead className="text-center">Modello</TableHead>
+              <TableHead className="text-center">WER</TableHead>
+              <TableHead className="text-center">CER</TableHead>
+              <TableHead className="text-center">Similarità</TableHead>
+              <TableHead className="text-center">Accuratezza</TableHead>
+              <TableHead className="text-center">Score</TableHead>
               <TableHead>Trascrizione</TableHead>
               <TableHead>Azioni</TableHead>
             </TableRow>
@@ -106,7 +103,6 @@ export function EvaluationTable({ evaluations }: EvaluationTableProps) {
               evaluations.flatMap((evaluation) =>
                 evaluation.models.map((modelResult, index) => (
                   <TableRow key={`${evaluation.createdAt}-${modelResult.modelName}-${index}`}>
-                    <TableCell className="text-sm">{new Date(evaluation.createdAt).toLocaleDateString()}</TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <Music className="h-4 w-4 text-gray-500" />
@@ -115,34 +111,51 @@ export function EvaluationTable({ evaluations }: EvaluationTableProps) {
                         </span>
                       </div>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="text-center">
                       <Badge variant="outline">{modelResult.modelName}</Badge>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="text-center">
                       <Badge
                         variant={getScoreColor(
-                          modelResult.wordErrorRate ? modelResult.wordErrorRate / 100 : undefined,
+                          modelResult.wordErrorRate || 0,
                           true,
                         )}
                       >
-                        {modelResult.wordErrorRate ? `${(modelResult.wordErrorRate * 100).toFixed(1)}%` : "N/A"}
+                        {modelResult.wordErrorRate ? `${(modelResult.wordErrorRate * 100).toFixed(1)}%` : "0,00%"}
                       </Badge>
                     </TableCell>
-                    <TableCell>
-                      <Badge variant="secondary">
+                    <TableCell className="text-center">
+                      <Badge variant={getScoreColor(
+                        modelResult.characterErrorRate || 0,
+                        true,
+                      )}>
                         {modelResult.characterErrorRate
                           ? `${(modelResult.characterErrorRate * 100).toFixed(1)}%`
-                          : "N/A"}
+                          : "0,00%"}
                       </Badge>
                     </TableCell>
-                    <TableCell>
-                      <Badge variant="secondary">
-                        {modelResult.literalSimilarity ? `${(modelResult.literalSimilarity * 100).toFixed(1)}%` : "N/A"}
+                    <TableCell className="text-center">
+                      <Badge variant={getScoreColor(
+                        modelResult.literalSimilarity || 0,
+                        false,
+                      )}>
+                        {modelResult.literalSimilarity ? `${(modelResult.literalSimilarity * 100).toFixed(1)}%` : "0,00%"}
                       </Badge>
                     </TableCell>
-                    <TableCell>
-                      <Badge variant="secondary">
-                        {modelResult.accuracy ? `${(modelResult.accuracy * 100).toFixed(1)}%` : "N/A"}
+                    <TableCell className="text-center">
+                      <Badge variant={getScoreColor(
+                        modelResult.accuracy || 0,
+                        false,
+                      )}>
+                        {modelResult.accuracy ? `${(modelResult.accuracy * 100).toFixed(1)}%` : "0,00%"}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <Badge variant="outline">
+                        {modelResult.processingTimeMs 
+                          ? ((1 - (modelResult.wordErrorRate || 0)) / (modelResult.processingTimeMs / 1000)).toFixed(4)
+                          : "N/A"
+                        }
                       </Badge>
                     </TableCell>
                     <TableCell className="max-w-xs">

@@ -6,7 +6,7 @@ import { Progress } from "@/components/ui/progress"
 import { Separator } from "@/components/ui/separator"
 import { Trophy, Clock } from "lucide-react"
 import type { Evaluation, ModelResult } from "@/types/evaluation"
-import { formatProcessingTime, formatWER } from "@/lib/format-utils"
+import { formatProcessingTime, formatWER, formatScore } from "@/lib/format-utils"
 
 interface EvaluationResultsProps {
   results: Evaluation
@@ -52,7 +52,8 @@ export function EvaluationResults({ results }: EvaluationResultsProps) {
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-xl font-bold text-yellow-900">{comparison.winner}</h3>
-              <p className="text-sm text-yellow-700">Punteggio WER: {formatWER(comparison.winnerScore)}</p>
+              <p className="text-sm text-yellow-700">Score Performance: {formatScore(comparison.winnerScore)}</p>
+              <p className="text-xs text-yellow-600">Formula: (1-WER)/Tempo</p>
             </div>
             <Badge variant="default" className="bg-yellow-600">
               <Trophy className="w-3 h-3 mr-1" />
@@ -185,8 +186,14 @@ export function EvaluationResults({ results }: EvaluationResultsProps) {
             </div>
             <div className="space-y-2">
               <div className="text-2xl font-bold text-purple-600">
-                {comparison.improvement > 0 ? "+" : ""}
-                {(comparison.improvement * 100).toFixed(1)}%
+                {comparison.improvement !== null ? (
+                  <>
+                    {comparison.improvement > 0 ? "+" : ""}
+                    {(comparison.improvement * 100).toFixed(1)}%
+                  </>
+                ) : (
+                  "0%"
+                )}
               </div>
               <div className="text-sm text-gray-500">Miglioramento</div>
             </div>

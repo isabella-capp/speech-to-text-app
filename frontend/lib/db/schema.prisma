@@ -135,9 +135,9 @@ model Evaluation {
   audioPath       String
   audioDurationMs Int?
 
-   winner String // "Whisper" o "Wav2Vec2"
-    winnerScore Int // WER del vincitore
-    improvement Int? // Miglioramento relativo in WER tra i due modelli (nullable)
+  winner String // "Whisper" o "Wav2Vec2"
+  winnerScore Float // Score calcolato come (1-WER)/Tempo
+  improvement Int? // Miglioramento relativo in WER tra i due modelli (nullable)
 
   groundTruthText String   // trascrizione corretta fornita dall’utente
 

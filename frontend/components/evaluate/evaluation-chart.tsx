@@ -177,13 +177,14 @@ export function EvaluationChart({ evaluations }: ImprovedEvaluationChartProps) {
 
   const avgWhisperTime =
     whisperMetrics.length > 0
-      ? whisperMetrics.reduce((sum, m) => sum + (m.processingTimeMs || 0), 0) / whisperMetrics.length
+      ? whisperMetrics.reduce((sum, m) => sum + ((m.processingTimeMs || 0) / 1000), 0) / whisperMetrics.length
       : 0
 
   const avgWav2vec2Time =
     wav2vec2Metrics.length > 0
-      ? wav2vec2Metrics.reduce((sum, m) => sum + (m.processingTimeMs || 0), 0) / wav2vec2Metrics.length
+      ? wav2vec2Metrics.reduce((sum, m) => sum + ((m.processingTimeMs || 0) / 1000), 0) / wav2vec2Metrics.length
       : 0
+
 
   return (
     <div className="space-y-6">

@@ -29,3 +29,11 @@ export function formatPercentage(value: number): string {
 export function formatWER(wer: number): string {
   return formatPercentage(wer)
 }
+
+/**
+ * Formatta il score di performance per la visualizzazione
+ * Score = (1-WER)/Tempo, quindi valori più alti sono migliori
+ */
+export function formatScore(score: number): string {
+  return score.toFixed(4)
+}
