@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Eye, Music } from "lucide-react"
+import { Eye, Music, Download } from "lucide-react"
 import type { Evaluation } from "@/types/evaluation"
 import { TranscriptionComparisonDialog } from "./transcription-comparison-dialog"
 
@@ -70,12 +70,70 @@ export function EvaluationTable({ evaluations }: EvaluationTableProps) {
       return "destructive" // Rosso per <70%
     }
   }
+
+  const downloadCSV = () => {
+    // Prepara i dati per il CSV
+    const csvData = evaluations.flatMap((evaluation) =>
+      evaluation.models.map((modelResult) => ({
+        Data: new Date(evaluation.createdAt).toLocaleDateString("it-IT"),
+        Audio: evaluation.audio.audioName,
+        Modello: modelResult.modelName,
+        WER: modelResult.wordErrorRate ? `${(modelResult.wordErrorRate * 100).toFixed(1)}%` : "0,00%",
+        CER: modelResult.characterErrorRate ? `${(modelResult.characterErrorRate * 100).toFixed(1)}%` : "0,00%",
+        Similarità: modelResult.literalSimilarity ? `${(modelResult.literalSimilarity * 100).toFixed(1)}%` : "0,00%",
+        Accuratezza: modelResult.accuracy ? `${(modelResult.accuracy * 100).toFixed(1)}%` : "0,00%",
+        Score: modelResult.processingTimeMs 
+          ? ((1 - (modelResult.wordErrorRate || 0)) / (modelResult.processingTimeMs / 1000)).toFixed(4)
+          : "N/A",
+        "Tempo (ms)": modelResult.processingTimeMs || "N/A",
+        Trascrizione: modelResult.transcription,
+        "Testo Corretto": evaluation.groundTruthText
+      }))
+    )
+
+    // Converte in formato CSV
+    const headers = Object.keys(csvData[0] || {})
+    const csvContent = [
+      headers.join(";"), // Header
+      ...csvData.map(row => 
+        headers.map(header => {
+          const value = row[header as keyof typeof row]
+          // Escape delle virgolette e aggiungi virgolette se contiene punto e virgola
+          const escapedValue = String(value).replace(/"/g, '""')
+          return escapedValue.includes(";") ? `"${escapedValue}"` : escapedValue
+        }).join(";")
+      )
+    ].join("\n")
+
+    // Crea il file e trigger del download
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" })
+    const link = document.createElement("a")
+    const url = URL.createObjectURL(blob)
+    link.setAttribute("href", url)
+    link.setAttribute("download", `valutazioni_${new Date().toISOString().split('T')[0]}.csv`)
+    link.style.visibility = "hidden"
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  }
   console.log("Evaluations data:", evaluations)
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Dettaglio Trascrizioni Valutate</CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle>Dettaglio Trascrizioni Valutate</CardTitle>
+          <Button 
+            onClick={downloadCSV}
+            variant="outline" 
+            size="sm" 
+            className="gap-2"
+            disabled={evaluations.length === 0}
+          >
+            <Download className="h-4 w-4" />
+            Scarica CSV
+          </Button>
+        </div>
       </CardHeader>
       <CardContent>
         <Table>
