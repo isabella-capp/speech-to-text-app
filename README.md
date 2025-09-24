@@ -162,44 +162,6 @@ uvicorn app.main:app --reload
 4. **Similarità Letterale**: Ratio di Levenshtein distance normalizzata
    - Misura similarità generale tra testi indipendentemente da segmentazione
 
-### Confronto Performance Modelli
-
-#### Wav2Vec2 Modelli Italiani
-1. **Facebook (Default)**: `facebook/wav2vec2-large-xlsr-53-italian`
-   - ✅ Ottimo per uso generale
-   - ✅ Bilanciato tra accuratezza e velocità  
-   - ✅ Supporto ufficiale e documentazione estesa
-   - ⚡ Tempo inferenza: ~2-4s per file di 30s
-
-2. **Jonatas Grosman**: `jonatasgrosman/wav2vec2-large-xlsr-53-italian`
-   - ✅ Maggiore accuratezza (+3-5% su dataset italiani)
-   - ✅ Ottimizzato specificamente per parlato italiano
-   - ⚠️ Richiede più risorse computazionali
-   - ⚡ Tempo inferenza: ~3-5s per file di 30s
-
-#### Whisper Modelli
-- **tiny**: Ultra-veloce, 39MB, qualità base
-- **base** (default): Equilibrio ideale, 142MB, qualità buona
-- **small**: Qualità superiore, 483MB, tempo medio
-- **medium/large**: Massima qualità, >1GB, tempi lunghi
-
-### � Benchmark Results (Esempi)
-```
-Dataset Test: 100 file audio italiani, 30s medi
-
-WER Medio:
-- Facebook Wav2Vec2: 12.3%
-- Jonatas Wav2Vec2: 9.7%  
-- Whisper Base: 8.2%
-- Whisper Small: 6.8%
-
-Tempo Inferenza Medio:
-- Facebook Wav2Vec2: 3.2s
-- Jonatas Wav2Vec2: 4.1s
-- Whisper Base: 2.8s
-- Whisper Small: 6.1s
-```
-
 ## 🏗️ Architettura e Design Patterns
 
 ### Backend Architecture
