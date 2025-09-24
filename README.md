@@ -177,7 +177,7 @@ uvicorn app.main:app --reload
 - **API Layer**: Separazione logica tra UI e backend calls
 - **Type Safety**: TypeScript strict per interfacce e dati metriche
 
-## �📦 Requisiti di Sistema
+## 📦 Requisiti di Sistema
 
 ### Frontend
 - Node.js 18+
