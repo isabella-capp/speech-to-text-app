@@ -7,7 +7,7 @@ export function BackendStatusChecker() {
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ["backend-status"],
     queryFn: async () => {
-      const response = await fetch("http://localhost:8000/")
+      const response = await fetch("http://localhost:8000/health/status")
       if (!response.ok) {
         throw new Error(`Backend unreachable: ${response.status}`)
       }
@@ -28,9 +28,11 @@ export function BackendStatusChecker() {
       
       {error && (
         <Alert variant="destructive">
-          <XCircle className="h-4 w-4" />
-          <AlertDescription>
-            Backend non raggiungibile. Assicurati che il server Python sia in esecuzione su localhost:8000.
+          <AlertDescription className="flex flex-row justify-between items-center">
+            <div className="flex flex-row gap-3 items-center">
+              <XCircle className="h-4 w-4" />
+              Backend non raggiungibile. Assicurati che il server Python sia in esecuzione su localhost:8000.
+            </div>
             <Button 
               variant="outline" 
               size="sm" 

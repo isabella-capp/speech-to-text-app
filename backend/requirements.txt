@@ -5,12 +5,8 @@ transformers
 torchaudio
 numpy
 soundfile
-faster-whisper
-librosa
+whisper
 pydantic-settings
 python-multipart
-PyJWT
-python-jose[cryptography]
-email-validator
 ffmpeg-python
 jiwer

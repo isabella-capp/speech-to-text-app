@@ -31,18 +31,3 @@ app.include_router(route_wav2vec2.router, prefix="/wav2vec2", tags=["wav2vec2"])
 app.include_router(route_whisper.router, prefix="/whisper", tags=["whisper"])
 app.include_router(route_models.router, prefix="/models", tags=["models"])
 app.include_router(health.router, prefix="/health", tags=["health"])
-
-
-@app.get("/")
-async def root():
-    """
-    Endpoint root per verificare lo stato dell'applicazione.
-
-    Returns:
-        Dizionario con messaggio di stato e informazioni di base.
-    """
-    return {
-        "message": "Speech-to-Text backend is running", 
-        "status": "ok",
-        "version": "1.0.0"
-    }
