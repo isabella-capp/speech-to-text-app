@@ -13,7 +13,7 @@ from difflib import SequenceMatcher
 
 def calculate_wer(reference: str, hypothesis: str) -> float:
     """
-    Calcola il Word Error Rate (WER) utilizzando jiwer.
+    Calcola il Word Error Rate (WER) utilizzando jiwer con normalizzazione.
     
     Args:
         reference: Trascrizione di riferimento (ground truth)
@@ -28,7 +28,18 @@ def calculate_wer(reference: str, hypothesis: str) -> float:
         return float('inf')
     
     try:
-        wer = jiwer.wer(reference, hypothesis)
+        # Applica normalizzazione standard per confronti ASR
+        transform = jiwer.Compose([
+            jiwer.ToLowerCase(),
+            jiwer.RemovePunctuation(),
+            jiwer.RemoveMultipleSpaces(),
+            jiwer.Strip()
+        ])
+        
+        ref_normalized = transform(reference)
+        hyp_normalized = transform(hypothesis)
+        
+        wer = jiwer.wer(ref_normalized, hyp_normalized)
         return wer
     except Exception as e:
         print(f"Errore nel calcolo WER: {e}")
@@ -37,7 +48,7 @@ def calculate_wer(reference: str, hypothesis: str) -> float:
 
 def calculate_cer(reference: str, hypothesis: str) -> float:
     """
-    Calcola il Character Error Rate (CER) utilizzando jiwer.
+    Calcola il Character Error Rate (CER) utilizzando jiwer con normalizzazione.
     
     Args:
         reference: Trascrizione di riferimento (ground truth)
@@ -52,7 +63,18 @@ def calculate_cer(reference: str, hypothesis: str) -> float:
         return float('inf')
     
     try:
-        cer = jiwer.cer(reference, hypothesis)
+        # Applica normalizzazione standard per confronti ASR
+        transform = jiwer.Compose([
+            jiwer.ToLowerCase(),
+            jiwer.RemovePunctuation(),
+            jiwer.RemoveMultipleSpaces(),
+            jiwer.Strip()
+        ])
+        
+        ref_normalized = transform(reference)
+        hyp_normalized = transform(hypothesis)
+        
+        cer = jiwer.cer(ref_normalized, hyp_normalized)
         return cer
     except Exception as e:
         print(f"Errore nel calcolo CER: {e}")
@@ -70,27 +92,30 @@ def calculate_detailed_metrics(reference: str, hypothesis: str) -> Dict[str, Any
     Returns:
         Dizionario con metriche dettagliate
     """
-    # Calcola WER e CER
-    wer = calculate_wer(reference, hypothesis)
-    cer = calculate_cer(reference, hypothesis)
+    # Applica trasformazioni per normalizzare i testi
+    transform = jiwer.Compose([
+        jiwer.ToLowerCase(),
+        jiwer.RemovePunctuation(),
+        jiwer.RemoveMultipleSpaces(),
+        jiwer.Strip()
+    ])
     
-    # Calcola operazioni dettagliate utilizzando jiwer
+    # Normalizza i testi per i calcoli
+    ref_normalized = transform(reference)
+    hyp_normalized = transform(hypothesis)
+    
+    # Calcola WER e CER sui testi normalizzati
+    wer = calculate_wer(ref_normalized, hyp_normalized)
+    cer = calculate_cer(ref_normalized, hyp_normalized)
+    
+    # Calcola operazioni dettagliate utilizzando jiwer sui testi normalizzati
     try:
-        # Usa le trasformazioni standard di jiwer per normalizzare
-        transform = jiwer.Compose([
-            jiwer.ToLowerCase(),
-            jiwer.RemovePunctuation(),
-            jiwer.RemoveMultipleSpaces(),
-            jiwer.Strip()
-        ])
+        # Dividi in parole i testi normalizzati
+        ref_words = ref_normalized.split()
+        hyp_words = hyp_normalized.split()
         
-        # Applica le trasformazioni e dividi in parole
-        ref_transformed = transform(reference)
-        hyp_transformed = transform(hypothesis)
-        ref_words = ref_transformed.split()
-        hyp_words = hyp_transformed.split()
-        
-        details = jiwer.process_words(reference, hypothesis)
+        # Usa testi normalizzati per i dettagli
+        details = jiwer.process_words(ref_normalized, hyp_normalized)
 
         word_substitutions = details.substitutions
         word_deletions = details.deletions
@@ -99,16 +124,16 @@ def calculate_detailed_metrics(reference: str, hypothesis: str) -> Dict[str, Any
         
     except Exception as e:
         print(f"Errore nel calcolo delle operazioni dettagliate: {e}")
-        # Fallback values
-        ref_words = reference.lower().split()
-        hyp_words = hypothesis.lower().split()
+        # Fallback values usando testi normalizzati
+        ref_words = ref_normalized.split()
+        hyp_words = hyp_normalized.split()
         word_substitutions = 0
         word_deletions = 0
         word_insertions = 0
         word_hits = 0
     
-    # Calcola similarità usando difflib
-    similarity = SequenceMatcher(None, reference.lower(), hypothesis.lower()).ratio()
+    # Calcola similarità usando difflib sui testi normalizzati
+    similarity = SequenceMatcher(None, ref_normalized, hyp_normalized).ratio()
     
     return {
         'wer': wer,

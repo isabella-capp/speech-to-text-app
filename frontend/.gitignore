@@ -43,5 +43,6 @@ next-env.d.ts
 # Database files
 lib/db/data/
 lib/db/migrations/
+lib/db/backups/
 
 public/uploads
